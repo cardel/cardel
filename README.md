@@ -58,6 +58,20 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 <br/>  
 
 
+
+
+## Github Stats  
+<table>
+ <td>
+  <tr valign="top" width="50%">
+ <div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  </tr>
+  <tr valign="top" width="50%">
+<div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>
+  </tr>
+ </td>
+</table>
+<br/>  
+
 ## Connect with me  
 <div align="center">
 <a href="https://github.com/cardel" target="_blank">
@@ -72,9 +86,9 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 <a href="https://linkedin.com/in/cardel" target="_blank">
 <img src=https://img.shields.io/badge/linkedin-%231E77B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white alt=linkedin style="margin-bottom: 5px;" />
 </a>
-<a href="https://www.facebook.com/cardel87" target="_blank">
+<!--<a href="https://www.facebook.com/cardel87" target="_blank">
 <img src=https://img.shields.io/badge/facebook-%232E87FB.svg?&style=for-the-badge&logo=facebook&logoColor=white alt=facebook style="margin-bottom: 5px;" />
-</a>
+</a>-->
  <!--
 <a href="https://instagram.com/iamrishavanand" target="_blank">
 <img src=https://img.shields.io/badge/instagram-%23000000.svg?&style=for-the-badge&logo=instagram&logoColor=white alt=instagram style="margin-bottom: 5px;" />
@@ -84,13 +98,6 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 
 <br/>  
 
-
-## Github Stats  
-<div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  
-
-<div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>  
-
-<br/>  
 
 
 
