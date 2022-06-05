@@ -1,5 +1,9 @@
 ### Hi there 👋
 
+### I'm an electronic and computer engineer with a master in computer engineering. I have solid experience in Python, Java and C++. Looking forward to provide solutions to difficult problems applying design patterns and good practices that enable the team to scale and maintain the code.
+
+Experience working with AWS and Azure to solve  machine learning problems. Excellent background in computer science that helps me to decide the best approach on complex scenarios where multiple options are available.
+
 <!--
 **cardel/cardel** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
