@@ -34,7 +34,7 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/git-scm-icon.svg" alt="Git" height="50" />  
 <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/gnu_bash-icon.svg" alt="Bash" height="50" />  
 <img style="margin: 10px"  src="https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png" alt"Sklearn" height="50" />
- <img style="margin: 10px"  src="https://pandas.pydata.org/static/img/pandas_white.svg" alt="Pandas" height="50" />
+ <img style="margin: 10px"  src="https://pandas.pydata.org/static/img/pandas.svg" alt="Pandas" height="50" />
 <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/keras.png" alt="Keras" height="50" />  
 <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/html5-original-wordmark.svg" alt="HTML5" height="50" />  
 <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/dot-net-original-wordmark.svg" alt=".NET" height="50" />  
