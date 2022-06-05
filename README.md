@@ -86,6 +86,8 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 
 
 ## Github Stats  
+<div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  
+
 <div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>  
 
 <br/>  
