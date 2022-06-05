@@ -62,13 +62,13 @@ Experience working with AWS and Azure to solve  machine learning problems. Excel
 
 ## Github Stats  
 <table>
- <td>
-  <tr valign="top" width="50%">
- <div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  </tr>
-  <tr valign="top" width="50%">
+ <tr>
+  <td valign="top" width="50%">
+ <div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  </td>
+  <td valign="top" width="50%">
 <div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>
-  </tr>
- </td>
+  </td>
+ </tr>
 </table>
 <br/>  
 
