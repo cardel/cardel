@@ -222,4 +222,7 @@ bar {
 exec_always --no-startup-id feh --bg-fill ~/Drive/Archivos/WallPapers/arp271_gemini_2048.jpg --bg-max ~/Drive/Archivos/WallPapers/spritenight_iss_4256.jpg
 
 bindsym $mod+c exec xfce4-screenshooter
+##Brillo portatil
+#bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+#bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 
