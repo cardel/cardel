@@ -2,14 +2,10 @@ local overrides = require("custom.configs.overrides")
 
 ---@type NvPluginSpec[]
 local plugins = {
-
-  -- Override plugin definition options
-  {
+   {
     "zbirenbaum/copilot.lua",
     event = "InsertEnter",
     opts = overrides.copilot,
-    enabled = true,
-    lazy = false,
   },
 
   {
@@ -26,13 +22,15 @@ local plugins = {
       sources = {
         { name = "nvim_lsp", group_index = 2 },
         { name = "copilot",  group_index = 2 },
-        { name = "luasnip",  group_index = 2 },
+        { name = "vim-metals",  group_index = 2 },
         { name = "buffer",   group_index = 2 },
         { name = "nvim_lua", group_index = 2 },
         { name = "path",     group_index = 2 },
       },
     },
   },
+  -- Override plugin definition options
+
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -53,12 +51,15 @@ local plugins = {
   -- override plugin configs
   {
     "williamboman/mason.nvim",
-    opts = overrides.mason
+   opts = {
+      ensure_installed = {
+        "lua-language-server",
+        "html-lsp",
+        "prettier",
+        "stylua"
+      },
+    },
   },
-
---  {'scalameta/nvim-metals', event = "InsertEnter", requires = { "nvim-lua/plenary.nvim", lazy=false, enabled=true }},
-
-
 
   {
     "nvim-treesitter/nvim-treesitter",
@@ -79,21 +80,6 @@ local plugins = {
     end,
   },
 
-
-  {
-    'mfussenegger/nvim-jdtls',
-    event = "InsertEnter",
-    lazy = false,
-    enabled = true,
-  },
-
-  -- Install nvim-dap,
-  {
-    "mfussenegger/nvim-dap",
-    event = "InsertEnter",
-    lazy = false,
-    enabled = true,
-  }
   -- To make a plugin not be loaded
   -- {
   --   "NvChad/nvim-colorizer.lua",
