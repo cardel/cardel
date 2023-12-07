@@ -23,6 +23,7 @@ M.treesitter = {
     "c",
     "markdown",
     "markdown_inline",
+    "scala"
   },
   indent = {
     enable = true,
@@ -36,7 +37,7 @@ M.mason = {
   ensure_installed = {
     -- lua stuff
     "lua-language-server",
-    "stylua",    
+    "stylua", 
     -- web dev stuff
     "css-lsp",
     "html-lsp",
@@ -47,6 +48,11 @@ M.mason = {
     -- c/cpp stuff
     "clangd",
     "clang-format",
+
+    --java / scala
+    "google-java-format",
+    --shell
+    "beautysh",
   },
 }
 

@@ -1,6 +1,5 @@
 local overrides = require("custom.configs.overrides")
 
----@type NvPluginSpec[]
 local plugins = {
    {
     "zbirenbaum/copilot.lua",
@@ -79,6 +78,7 @@ local plugins = {
       require("better_escape").setup()
     end,
   },
+
 
   -- To make a plugin not be loaded
   -- {
