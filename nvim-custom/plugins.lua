@@ -50,14 +50,7 @@ local plugins = {
   -- override plugin configs
   {
     "williamboman/mason.nvim",
-   opts = {
-      ensure_installed = {
-        "lua-language-server",
-        "html-lsp",
-        "prettier",
-        "stylua"
-      },
-    },
+    opts = overrides.mason,
   },
 
   {
@@ -78,8 +71,78 @@ local plugins = {
       require("better_escape").setup()
     end,
   },
+  --Dap
+	{
+		"leoluz/nvim-dap-go",
+		ft = "go",
+		dependencies = "mfussenegger/nvim-dap",
+		config = function(_, opts)
+			require("dap-go").setup(opts)	end,
+	},
+	{
+		"mfussenegger/nvim-dap",
+    event = "BufRead",
+		config = function()
+			require("custom.configs.dap")
+		end,
+	},
 
+	{
+		"rcarriga/nvim-dap-ui",
+		config = function()
+			require("dapui").setup()
+		end,
+		requires = { "mfussenegger/nvim-dap" },
+	},
+	{
+		"theHamsta/nvim-dap-virtual-text",
+		config = function()
+			require("nvim-dap-virtual-text").setup()
+		end,
+		requires = { "mfussenegger/nvim-dap" },
+	},
+  --Repl racket
+{
+  "pappasam/nvim-repl",
+  init = function()
+    vim.g["repl_filetype_commands"] = {
+      javascript = "node",
+      python = "ipython --no-autoindent -i " .. vim.fn.expand('%'),
+      scala = "scala",
+      racket = "racket --repl --eval \'(enter! (file \"" .. vim.fn.expand('%') .. "\"))\'",
+    }
+  end,
+  keys = {
+    { "<leader>rt", "<cmd>ReplToggle<cr>", desc = "Toggle nvim-repl" },
+    { "<leader>rc", "<cmd>ReplRunCell<cr>", desc = "nvim-repl run cell" },
+  },
+},
 
+  {
+  "scalameta/nvim-metals",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+  },
+  ft = { "scala", "sbt", "java" },
+  opts = function()
+    local metals_config = require("metals").bare_config()
+    metals_config.on_attach = function(client, bufnr)
+      -- your on_attach function
+    end
+
+    return metals_config
+  end,
+  config = function(self, metals_config)
+    local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = self.ft,
+      callback = function()
+        require("metals").initialize_or_attach(metals_config)
+      end,
+      group = nvim_metals_group,
+    })
+  end
+},
   -- To make a plugin not be loaded
   -- {
   --   "NvChad/nvim-colorizer.lua",

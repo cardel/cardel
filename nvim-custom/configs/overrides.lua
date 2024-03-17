@@ -23,7 +23,8 @@ M.treesitter = {
     "c",
     "markdown",
     "markdown_inline",
-    "scala"
+    "scala",
+    "racket"
   },
   indent = {
     enable = true,
@@ -53,6 +54,28 @@ M.mason = {
     "google-java-format",
     --shell
     "beautysh",
+    "bash-language-server",
+    "bash-debug-adapter",
+   	"awk-language-server",
+    --markdown
+    "marksman",
+    -- python
+		"pyright",
+		"pylint",
+    "debugpy",
+    --scala
+    "metals",
+    --ruboy
+    "ruby-lsp",
+    --java
+    "jdtls",
+    "java-debug-adapter",
+    "google-java-format",
+    "java-language-server",
+    --Others
+    "mockdebug",
+    --Yaml
+    "yaml-language-server",
   },
 }
 
@@ -71,5 +94,51 @@ M.nvimtree = {
     },
   },
 }
+M.ui = {
+	tabufline = {
+		lazyload = false,
+		overriden_modules = nil,
+	},
+}
+M.cmp = {
+	formatting = {
+		format = function(entry, vim_item)
+			local icons = require("nvchad.icons.lspkind")
+			vim_item.kind = string.format("%s %s", icons[vim_item.kind], vim_item.kind)
+			vim_item.menu = ({
+				luasnip = "[Luasnip]",
+				nvim_lsp = "[Nvim LSP]",
+				buffer = "[Buffer]",
+				nvim_lua = "[Nvim Lua]",
+				path = "[Path]",
+			})[entry.source.name]
+			return vim_item
+		end,
+	},
+}
+
+M.telescope = {
+	defaults = {
+		vimgrep_arguments = {
+			"rg",
+			"-L",
+			"--color=never",
+			"--no-heading",
+			"--with-filename",
+			"--line-number",
+			"--column",
+			"--smart-case",
+			"--hidden",
+		},
+		mappings = {
+			i = {
+				["<esc>"] = function(...)
+					require("telescope.actions").close(...)
+				end,
+			},
+		},
+	},
+}
+
 
 return M

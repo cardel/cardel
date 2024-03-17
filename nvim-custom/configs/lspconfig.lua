@@ -13,5 +13,12 @@ for _, lsp in ipairs(servers) do
   }
 end
 
+lspconfig.racket_langserver.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  cmd = { "racket", "--lib", "racket-langserver" },
+  filetypes = { "racket", "scheme" },
+}
+
 -- 
 -- lspconfig.pyright.setup { blabla}
