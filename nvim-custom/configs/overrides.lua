@@ -63,17 +63,22 @@ M.mason = {
 		"pyright",
 		"pylint",
     "debugpy",
+    "autopep8",
+    "autoflake",
+    --latex
+    "latexindent",
     --scala
-    "metals",
     --ruboy
     "ruby-lsp",
+    "rubocop",
     --java
     "jdtls",
     "java-debug-adapter",
     "google-java-format",
-    "java-language-server",
     --Others
     "mockdebug",
+    "gradle-language-server",
+    "sql-formatter",
     --Yaml
     "yaml-language-server",
   },
