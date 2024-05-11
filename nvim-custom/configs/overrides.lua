@@ -62,6 +62,7 @@ M.mason = {
     -- python
 		"pyright",
 		"pylint",
+    "python-lsp-server",
     "debugpy",
     "autopep8",
     "autoflake",
@@ -79,6 +80,8 @@ M.mason = {
     "mockdebug",
     "gradle-language-server",
     "sql-formatter",
+    --shell
+    "shellcheck",
     --Yaml
     "yaml-language-server",
   },

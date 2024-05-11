@@ -102,21 +102,32 @@ local plugins = {
 		requires = { "mfussenegger/nvim-dap" },
 	},
   --Repl racket
-{
-  "pappasam/nvim-repl",
-  init = function()
-    vim.g["repl_filetype_commands"] = {
-      javascript = "node",
-      python = "ipython --no-autoindent -i " .. vim.fn.expand('%'),
-      scala = "scala",
-      racket = "racket --repl --eval \'(enter! (file \"" .. vim.fn.expand('%') .. "\"))\'",
+  {
+    "pappasam/nvim-repl",
+    init = function()
+      vim.g["repl_filetype_commands"] = {
+        javascript = "node",
+        python = "ipython --no-autoindent -i " .. vim.fn.expand('%'),
+        scala = "scala",
+        racket = "racket --repl --eval '(enter! (file \"" .. vim.fn.expand('%:p') .. "\"))'",
+      }
+    end,
+    keys = {
+      { "<leader>rt", "<cmd>ReplToggle<cr>", desc = "Toggle nvim-repl" },
+      { "<leader>rc", "<cmd>ReplRunCell<cr>", desc = "nvim-repl run cell" },
     }
-  end,
-  keys = {
-    { "<leader>rt", "<cmd>ReplToggle<cr>", desc = "Toggle nvim-repl" },
-    { "<leader>rc", "<cmd>ReplRunCell<cr>", desc = "nvim-repl run cell" },
   },
-},
+  {
+    "NeogitOrg/neogit",
+     dependencies = {
+        "nvim-lua/plenary.nvim",         -- required
+        "sindrets/diffview.nvim",        -- optional - Diff integration
+        -- Only one of these is needed, not both.
+        "nvim-telescope/telescope.nvim", -- optional
+        "ibhagwan/fzf-lua",              -- optional
+    },
+    config = true
+  },
 
   -- To make a plugin not be loaded
   -- {
