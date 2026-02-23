@@ -1,0 +1,86 @@
+# ============================================================
+# GitHub Actions — Generar PDF y publicar como Release
+# ============================================================
+
+name: 📄 Generar PDF de Documentación
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      include_security:
+        description: "¿Incluir documento de seguridad?"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-pdf:
+    name: Generar PDF
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    container:
+      image: cardel87/create-pdf-from-markdown:latest
+      # CRÍTICO: Chromium necesita más de 64MB en /dev/shm para renderizar
+      options: --shm-size=256m
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🖨️ Generar PDF
+        run: |
+          FLAGS="--docs-dir docs --output /tmp/pdf-output --individual"
+          if [ "${{ github.event.inputs.include_security }}" = "true" ]; then
+            FLAGS="${FLAGS} --include-security"
+          fi
+          generate-pdf ${FLAGS}
+
+      - name: 📦 Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentacion-pdf
+          path: /tmp/pdf-output/**/*.pdf
+          retention-days: 30
+
+  publish-release:
+    name: Publicar Release
+    needs: generate-pdf
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Descargar artefactos
+        uses: actions/download-artifact@v4
+        with:
+          name: documentacion-pdf
+          path: pdfs
+
+      - name: 📋 Listar PDFs
+        run: find pdfs -name "*.pdf" -type f
+
+      - name: 🏷️ Generar tag
+        id: tag
+        run: |
+          echo "tag=docs-$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+          echo "date=$(date +'%d/%m/%Y %H:%M')" >> "$GITHUB_OUTPUT"
+
+      - name: 🚀 Crear Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "📄 Documentación — ${{ steps.tag.outputs.date }}"
+          body: |
+            PDF generado automáticamente desde `docs/`.
+            📅 ${{ steps.tag.outputs.date }} | 🔗 ${{ github.sha }}
+          files: pdfs/**/*.pdf
+          draft: false
+          prerelease: false
