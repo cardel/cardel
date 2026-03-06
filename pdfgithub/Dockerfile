@@ -21,6 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # ============================================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget curl ca-certificates git jq \
+    xz-utils \
     fonts-noto fonts-noto-cjk fonts-liberation fontconfig \
     librsvg2-bin \
     # Chromium y TODAS sus dependencias

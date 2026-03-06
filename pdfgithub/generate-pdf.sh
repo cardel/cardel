@@ -22,7 +22,7 @@ GENERATE_INDIVIDUAL=false
 INCLUDE_SECURITY=false
 TITLE="Plataforma de Datos — Documentación Técnica"
 SUBTITLE="Arquitectura, Despliegue y Operación sobre Kubernetes/AWS"
-AUTHOR="Carlos A Delgado"
+AUTHOR="Carlos A Delgado (cardel)"
 FOOTER_TEXT="Documento Confidencial"
 HEADER_LEFT="Plataforma de Datos"
 MERMAID_THEME="neutral"
@@ -298,16 +298,16 @@ numbersections: true
 header-includes:
   - \usepackage{fancyhdr}
   - \pagestyle{fancy}
-  - \usepackage{booktabs, array, longtable}
-  - \usepackage{calc}
   - \fancyhead[L]{\small ${HEADER_LEFT}}
   - \fancyhead[R]{\small \thepage}
   - \fancyfoot[C]{\small ${FOOTER_TEXT}}
   - \renewcommand{\headrulewidth}{0.4pt}
   - \renewcommand{\footrulewidth}{0.2pt}
-  - \AtBeginEnvironment{longtable}{\small}
-  - \setlength{\LTleft}{0pt}
-  - \setlength{\LTright}{0pt}
+  - \usepackage{xurl}
+  - \setlength{\tabcolsep}{4pt}
+  - \renewcommand{\arraystretch}{1.3}
+  - \let\oldlongtable\longtable
+  - \renewcommand{\longtable}{\small\oldlongtable}
 ---
 METAEOF
 
