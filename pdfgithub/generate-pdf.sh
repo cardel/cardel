@@ -22,7 +22,7 @@ GENERATE_INDIVIDUAL=false
 INCLUDE_SECURITY=false
 TITLE="Plataforma de Datos — Documentación Técnica"
 SUBTITLE="Arquitectura, Despliegue y Operación sobre Kubernetes/AWS"
-AUTHOR="Carlos A Delgado (cardel)"
+AUTHOR="Carlos Andres Delgado Saavedra"
 FOOTER_TEXT="Documento Confidencial"
 HEADER_LEFT="Plataforma de Datos"
 MERMAID_THEME="neutral"
@@ -267,7 +267,7 @@ done
 # FASE 2: Metadata Pandoc
 # ============================================================
 log "Fase 2: Generando metadata..."
-DATE=$(date +'%Y-%m-%d' 2>/dev/null || echo "2026")
+DATE=$(date +'%Y-%m-%d' 2>/dev/null || echo "2025")
 
 # IMPORTANTE:
 # - NO usar titlepage-color, titlepage-text-color (son de Eisvogel, no Pandoc)
@@ -304,10 +304,15 @@ header-includes:
   - \renewcommand{\headrulewidth}{0.4pt}
   - \renewcommand{\footrulewidth}{0.2pt}
   - \usepackage{xurl}
+  - \usepackage{etoolbox}
   - \setlength{\tabcolsep}{4pt}
   - \renewcommand{\arraystretch}{1.3}
   - \let\oldlongtable\longtable
-  - \renewcommand{\longtable}{\small\oldlongtable}
+  - \renewcommand{\longtable}{\footnotesize\oldlongtable}
+  - \tolerance=9999
+  - \emergencystretch=3em
+  - \hyphenpenalty=50
+  - \exhyphenpenalty=50
 ---
 METAEOF
 
@@ -370,6 +375,7 @@ PANDOC_OUT=$(pandoc \
   --number-sections \
   --columns=80 \
   --wrap=auto \
+  --lua-filter=/usr/local/share/pandoc/filters/break-code.lua \
   -V mainfont="Noto Sans" \
   -V monofont="Liberation Mono" \
   -V mathfont="Noto Sans Math" \

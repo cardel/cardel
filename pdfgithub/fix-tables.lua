@@ -1,23 +1,26 @@
--- fix-tables.lua
-function Table(el)
-	local colspecs = el.colspecs
-	local needs_fix = false
+-- break-code.lua
+-- Pandoc Lua filter: permite line-break en texto monospace (backticks)
+-- dentro de tablas PDF. Inserta \allowbreak despues de . / - _ : @
+-- para que URLs largas como `grafana-data-stack.dev.confirmeza.com.co`
+-- se quiebren correctamente en celdas de longtable.
 
-	-- Revisamos si hay columnas con ancho 0 (automáticas/c/l/r)
-	for i, spec in ipairs(colspecs) do
-		if spec[2] == nil or spec[2] == 0 then
-			needs_fix = true
-			break
-		end
+function Code(elem)
+	if FORMAT:match("latex") then
+		local text = elem.text
+		-- Escapar caracteres especiales de LaTeX
+		text = text:gsub("%%", "\\%%")
+		text = text:gsub("#", "\\#")
+		text = text:gsub("&", "\\&")
+		text = text:gsub("{", "\\{")
+		text = text:gsub("}", "\\}")
+		text = text:gsub("~", "\\textasciitilde{}")
+		text = text:gsub("%^", "\\textasciicircum{}")
+		text = text:gsub("_", "\\_")
+		text = text:gsub("%$", "\\$")
+		-- Insertar \allowbreak despues de puntos de quiebre seguros
+		-- NO incluir _ (ya escapado como \_ que LaTeX quiebra solo)
+		text = text:gsub("([%.%/%-%:@])", "%1\\allowbreak{}")
+		return pandoc.RawInline("latex", "\\texttt{" .. text .. "}")
 	end
-
-	if needs_fix then
-		local n = #colspecs
-		for i = 1, n do
-			-- Asignamos un ancho equitativo (1 / número de columnas)
-			-- Esto fuerza a Pandoc a usar p{...} en LaTeX
-			el.colspecs[i][2] = 1.0 / n
-		end
-	end
-	return el
+	return elem
 end
