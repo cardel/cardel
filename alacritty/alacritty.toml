@@ -1,0 +1,217 @@
+# =============================================================================
+# alacritty.toml -- tuned for Claude Code TUI on Alacritty + tmux + zsh (Arch)
+# Source of truth: ~/repositorios/cardel/alacritty/alacritty.toml
+# Symlinked from ~/.config/alacritty/alacritty.toml
+# Tested with alacritty 0.17, tmux 3.6a, JetBrainsMono Nerd Font, Wayland.
+# Alacritty switched config format from YAML to TOML in 0.13; this file
+# targets that schema and will be rejected by older builds.
+# =============================================================================
+
+[general]
+# Hot-reload on save so iterating on this file does not require a restart.
+live_config_reload = true
+# Hand scrollback to tmux; keep Alacritty's own buffer modest.
+working_directory = "None"
+
+[env]
+# `alacritty` (not `xterm-256color`) is the terminfo Alacritty installs and
+# the one tmux's terminal-features map keys off of. Forcing it here keeps
+# behavior consistent when launching from a desktop entry that strips TERM.
+TERM = "alacritty"
+
+# ---- Window ----------------------------------------------------------------
+[window]
+# Slightly relaxed padding so the Claude Code TUI border does not hug the
+# window chrome. dynamic_padding evens out leftover pixels on resize.
+padding = { x = 8, y = 6 }
+dynamic_padding = true
+# Inner apps (tmux, zsh, Claude Code) own the title; let them set it.
+dynamic_title = true
+# Server-side decorations under Wayland; "full" if you prefer Alacritty's
+# bar. "none" for tiling-WM-only setups (i3/Hyprland) — toggle if needed.
+decorations = "full"
+opacity = 1.0
+# Default geometry. Comment out if you prefer the WM to decide.
+dimensions = { columns = 220, lines = 56 }
+startup_mode = "Windowed"
+
+# ---- Scrolling -------------------------------------------------------------
+[scrolling]
+# tmux history-limit is 100k; keep Alacritty's local buffer small so a
+# stray detached session does not eat memory.
+history = 10000
+multiplier = 3
+
+# ---- Font ------------------------------------------------------------------
+# JetBrainsMono Nerd Font ships glyphs the tmux statusline and Claude Code
+# spinners rely on. The "Mono" variant guarantees fixed-width icons.
+[font]
+size = 11.0
+builtin_box_drawing = true
+
+[font.normal]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Italic"
+
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Bold Italic"
+
+[font.offset]
+x = 0
+y = 1
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+# ---- Cursor ----------------------------------------------------------------
+[cursor]
+style = { shape = "Beam", blinking = "On" }
+vi_mode_style = { shape = "Block", blinking = "Off" }
+blink_interval = 600
+unfocused_hollow = true
+thickness = 0.18
+
+# ---- Selection / mouse / clipboard ----------------------------------------
+[selection]
+# OSC 52 pipes through tmux too; this is the local-window fallback.
+save_to_clipboard = true
+semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+
+[mouse]
+hide_when_typing = true
+
+# ---- Bell ------------------------------------------------------------------
+[bell]
+animation = "EaseOutExpo"
+duration = 80
+color = "#8C1515"   # Stanford cardinal — matches Beamer/tmux accent.
+
+# ---- Colors ----------------------------------------------------------------
+# Dark palette tuned to play well with the tmux statusline (colour167 ≈ #d75f5f
+# soft red) and Claude Code diff highlighting. Background is near-black so
+# minted/syntax foregrounds stay legible.
+[colors.primary]
+background = "#0f1115"
+foreground = "#d8dee9"
+dim_foreground       = "#a5abb6"
+bright_foreground    = "#eceff4"
+
+[colors.cursor]
+text   = "#0f1115"
+cursor = "#d8dee9"
+
+[colors.vi_mode_cursor]
+text   = "#0f1115"
+cursor = "#8C1515"
+
+[colors.selection]
+text       = "CellForeground"
+background = "#3b4252"
+
+[colors.search.matches]
+foreground = "#0f1115"
+background = "#ebcb8b"
+
+[colors.search.focused_match]
+foreground = "#0f1115"
+background = "#a3be8c"
+
+[colors.hints.start]
+foreground = "#0f1115"
+background = "#ebcb8b"
+
+[colors.hints.end]
+foreground = "#0f1115"
+background = "#a3be8c"
+
+[colors.line_indicator]
+foreground = "None"
+background = "None"
+
+[colors.footer_bar]
+foreground = "#d8dee9"
+background = "#1c1f26"
+
+[colors.normal]
+black   = "#1c1f26"
+red     = "#bf616a"
+green   = "#a3be8c"
+yellow  = "#ebcb8b"
+blue    = "#81a1c1"
+magenta = "#b48ead"
+cyan    = "#88c0d0"
+white   = "#d8dee9"
+
+[colors.bright]
+black   = "#4c566a"
+red     = "#d75f5f"   # mirrors tmux colour167
+green   = "#b5cea8"
+yellow  = "#f0d399"
+blue    = "#9ec1e8"
+magenta = "#c7a3cf"
+cyan    = "#9ed7e2"
+white   = "#eceff4"
+
+[[colors.indexed_colors]]
+index = 16
+color = "#d08770"
+
+[[colors.indexed_colors]]
+index = 17
+color = "#8C1515"
+
+# ---- Keyboard bindings -----------------------------------------------------
+# Conservative set: do not steal keys tmux/zsh/Claude Code already use.
+# Ctrl-Shift-{C,V} are standard and survive inside tmux because tmux
+# forwards extkeys (CSI-u). Font size shortcuts use the numpad and
+# main-row keys to cover both layouts.
+[keyboard]
+bindings = [
+  # Clipboard
+  { key = "C", mods = "Control|Shift", action = "Copy" },
+  { key = "V", mods = "Control|Shift", action = "Paste" },
+  { key = "Insert", mods = "Shift",     action = "PasteSelection" },
+
+  # Font size
+  { key = "Plus",     mods = "Control",       action = "IncreaseFontSize" },
+  { key = "Equals",   mods = "Control",       action = "IncreaseFontSize" },
+  { key = "Minus",    mods = "Control",       action = "DecreaseFontSize" },
+  { key = "Key0",     mods = "Control",       action = "ResetFontSize" },
+  { key = "NumpadAdd",      mods = "Control", action = "IncreaseFontSize" },
+  { key = "NumpadSubtract", mods = "Control", action = "DecreaseFontSize" },
+
+  # Window
+  { key = "F11",            action = "ToggleFullscreen" },
+  { key = "Return", mods = "Control|Shift", action = "SpawnNewInstance" },
+
+  # Scrollback (these are inert inside tmux because tmux owns the buffer,
+  # but useful when running Alacritty without tmux)
+  { key = "PageUp",   mods = "Shift", action = "ScrollPageUp"   },
+  { key = "PageDown", mods = "Shift", action = "ScrollPageDown" },
+  { key = "Home",     mods = "Shift", action = "ScrollToTop"    },
+  { key = "End",      mods = "Shift", action = "ScrollToBottom" },
+
+  # Vi mode (search and copy without leaving the keyboard)
+  { key = "Space", mods = "Control|Shift", mode = "~Search", action = "ToggleViMode" },
+  { key = "F",     mods = "Control|Shift", mode = "~Search", action = "SearchForward"  },
+  { key = "B",     mods = "Control|Shift", mode = "~Search", action = "SearchBackward" },
+]
+
+# ---- Shell -----------------------------------------------------------------
+# Leave shell defaults alone. tmux is launched by the user (or by zsh's
+# rc file) so that detaching does not also close Alacritty.
+# To always start inside tmux, uncomment the block below:
+#
+# [terminal.shell]
+# program = "/usr/bin/zsh"
+# args    = ["-l", "-c", "tmux attach -t main || tmux new -s main"]
