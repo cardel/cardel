@@ -57,9 +57,20 @@ That entry expects `TERM=alacritty` outside tmux, which is exactly what
 `[env].TERM` here guarantees. Mismatched values silently disable
 truecolor and OSC 52, so keep both files in sync if you fork either.
 
-## Optional: launch straight into tmux
+## tmux on launch (default)
 
-The bottom of `alacritty.toml` has a commented `[terminal.shell]` block
+The bottom of `alacritty.toml` has an active `[terminal.shell]` block
 that attaches to (or creates) a tmux session named `main` on launch.
-Leaving it commented keeps Alacritty usable without tmux (handy for
-quick `pacman` or `journalctl` windows).
+
+Trade-off: `tmux detach` closes the Alacritty window because the shell
+process exits with the session. If you want the window to survive
+detach, comment that block out and move the launcher to `~/.zshrc`:
+
+```zsh
+if [[ -z "$TMUX" ]] && [[ -n "$PS1" ]] && command -v tmux >/dev/null; then
+  tmux attach -t main 2>/dev/null || tmux new -s main
+fi
+```
+
+A bare `zsh` underneath then survives the detach and you can re-attach
+without losing the window.

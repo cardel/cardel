@@ -208,10 +208,10 @@ bindings = [
 ]
 
 # ---- Shell -----------------------------------------------------------------
-# Leave shell defaults alone. tmux is launched by the user (or by zsh's
-# rc file) so that detaching does not also close Alacritty.
-# To always start inside tmux, uncomment the block below:
-#
-# [terminal.shell]
-# program = "/usr/bin/zsh"
-# args    = ["-l", "-c", "tmux attach -t main || tmux new -s main"]
+# Always attach to (or create) the tmux session named `main` on launch.
+# Trade-off: `tmux detach` closes the Alacritty window because the shell
+# process exits with the session. To keep the window alive after detach,
+# move this launcher to ~/.zshrc instead and revert this block to defaults.
+[terminal.shell]
+program = "/usr/bin/zsh"
+args    = ["-l", "-c", "tmux attach -t main || tmux new -s main"]
