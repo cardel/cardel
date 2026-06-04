@@ -1,0 +1,155 @@
+#ccaa68
+#c2914a
+#8a8987
+### Do not remove above lines ###
+###       START CONFIG        ###
+[manager]
+cwd =             { fg = "#ccaa68" }
+find_keyword =    { fg = "#c2914a", bold = true, italic = true, underline = true }
+marker_selected = { fg = "#c2914a", bg = "#c2914a" }
+
+
+hovered =         { reversed = true }
+preview_hovered = { underline = true }
+
+# Marker
+marker_copied = { fg = "#E2D61D", bg = "#E2D61D" }
+marker_cut =    { fg = "#2E8FD1", bg = "#2E8FD1" }
+marker_marked = { fg = "#C738B2", bg = "#C738B2" }
+# Count
+count_copied = { fg = "#1E1E2E", bg = "#E2D61D" }
+count_cut =    { fg = "#1E1E2E", bg = "#2E8FD1" }
+
+# Tab
+tab_width = 1
+tab_inactive = {}
+tab_active = { reversed = true }
+
+# Count
+count_selected = { fg = "#1e1e2e", bg = "#c2914a" }
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#8a8987" }
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#8a8987", bg = "#8a8987" }
+
+# Mode
+mode_normal = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+mode_select = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+mode_unset =  { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+
+# Progress
+progress_label =  { fg = "#FFFFFF", bold = true }
+progress_normal = { fg = "#c2914a", bg = "#8a8987" }
+progress_error =  { fg = "#FF1300", bg = "#8a8987" }
+
+[select]
+border = { fg = "#c2914a" }
+active = { fg = "#c2914a", bold = true }
+inactive = {}
+
+[input]
+title = {}
+value = {}
+border =   { fg = "#c2914a" }
+selected = { reversed = true }
+
+[completion]
+border = { fg = "#c2914a" }
+
+[tasks]
+title = {}
+border =  { fg = "#c2914a" }
+hovered = { fg = "#8a8987", underline = true }
+
+[which]
+cand = { fg = "#c2914a" }
+desc = { fg = "#8a8987" }
+separator = "  "
+
+[help]
+on =      { fg = "#c2914a" }
+run =     { fg = "#8a8987" }
+hovered = { reversed = true, bold = true }
+footer =  { fg = "#8a8987", bg = "#8a8987" }
+
+[notify]
+title_info =  { fg = "#c2914a" }
+title_warn =  { fg = "#E1710E" }
+title_error = { fg = "#FF1300" }
+
+[icon]
+globs = [
+  { name = "*/hypr/hypr*.conf",          text = "", fg = "#00aaae" },
+  { name = "*/hypr/user_configs/*.conf", text = "", fg = "#00aaae" },
+]
+prepend_dirs  = [
+	{ name = ".config",     text = "", fg = "#89E051" },
+	{ name = ".git",        text = "", fg = "#FF1300" },
+	{ name = "Desktop",     text = "", fg = "#CFD728" },
+	{ name = "Development", text = "", fg = "#89E051" },
+	{ name = "Games",       text = "󰺵", fg = "#89E051" },
+	{ name = "Documents",   text = "", fg = "#FF1300" },
+	{ name = "Downloads",   text = "", fg = "#185ABD" },
+	{ name = "Library",     text = "", fg = "#FF7C00" },
+	{ name = "Templates",   text = "", fg = "#FF7C00" },
+	{ name = "Movies",      text = "", fg = "#9D6462" },
+	{ name = "Videos",      text = "", fg = "#9D6462" },
+	{ name = "Music",       text = "", fg = "#FF008F" },
+	{ name = "Pictures",    text = "", fg = "#A074C4" },
+	{ name = "Public",      text = "", fg = "#00AEFF" },
+	{ name = "Notes",       text = "󰠮", fg = "#89E051" },
+]
+
+prepend_files = [
+  # Dotfiles
+  { name = ".bash_history", text = "", fg = "#89E051" },
+  { name = ".bash_logout",  text = "", fg = "#89E051" },
+]
+
+prepend_exts = [
+  # Archives
+  { name = "7z",  text =  "",  fg = "#185ABD" },
+  { name = "bz2", text =  "",  fg = "#185ABD" },
+  { name = "gz",  text =  "",  fg = "#185ABD" },
+  { name = "rar", text =  "",  fg = "#185ABD" },
+  { name = "tar", text =  "",  fg = "#185ABD" },
+  { name = "xz",  text =  "",  fg = "#185ABD" },
+  { name = "zip", text =  "",  fg = "#185ABD" },
+  { name = "lz4", text =  "",  fg = "#185ABD" },
+  { name = "zst", text =  "",  fg = "#185ABD" },
+
+  # Movies
+  { name = "avi",  text = "",  fg = "#9D6462" },
+  { name = "mkv",  text = "",  fg = "#9D6462" },
+  { name = "mov",  text = "",  fg = "#9D6462" },
+  { name = "mp4",  text = "",  fg = "#9D6462" },
+  { name = "webm", text = "",  fg = "#9D6462" },
+
+  # Audio
+  { name = "aac",  text = "",  fg = "#FF008F" },
+  { name = "flac", text = "",  fg = "#FF008F" },
+  { name = "m4a",  text = "",  fg = "#FF008F" },
+  { name = "mp3",  text = "",  fg = "#FF008F" },
+  { name = "ogg",  text = "",  fg = "#FF008F" },
+  { name = "opus", text = "",  fg = "#FF008F" },
+  { name = "wav",  text = "",  fg = "#FF008F" },
+]
+prepend_conds = [
+	# Special files
+	{ if = "orphan", text = "", fg = "#E2D61D" },
+	{ if = "link"  , text = "", fg = "#00AEFF" },
+
+	# ifback
+	{ if = "dir",  text = "", fg = "#c2914a" },
+	{ if = "exec", text = "", fg = "#89E051" },
+	{ if = "!dir", text = "", fg = "#FFFFFF" },
+]
+
+[filetype]
+rules = [{ name = "*", fg = "#ccaa68" }, { name = "*/", fg = "#c2914a" }]
+###       END CONFIG        ###

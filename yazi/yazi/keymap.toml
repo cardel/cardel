@@ -1,0 +1,30 @@
+# If you encounter any issues, please make an issue at https://github.com/yazi-rs/schemas.
+"$schema" = "https://yazi-rs.github.io/schemas/keymap.json"
+[[manager.prepend_keymap]]
+on   = [ "<C-;>" ]
+run  = "shell $TERMINAL --confirm --orphan"
+desc = "Open terminal here"
+[[manager.prepend_keymap]]
+on   = [ "<C-y>" ]
+run  = "unyank"
+desc = "Unyank"
+[[manager.prepend_keymap]]
+on   = [ "u", "y" ]
+run  = "unyank"
+desc = "Unyank"
+[[manager.prepend_keymap]]
+on   = [ "u", "s" ]
+run  = "escape --select"
+desc = "Unselect"
+[[manager.prepend_keymap]]
+on   = [ "c", "m" ]
+run  = "plugin chmod"
+desc = "Chmod on selected files"
+[[manager.prepend_keymap]]
+on   = [ "c", "a" ]
+run  = "plugin compress"
+desc = "Archive selected files"
+[[manager.prepend_keymap]]
+on   = [ "g", "m" ]
+run  = "cd /run/media/$USER/"
+desc = "Goto media"
