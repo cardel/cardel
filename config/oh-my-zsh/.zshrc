@@ -122,3 +122,6 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
+# yazi: el keybind <C-;> ("Open terminal here") lanza $TERMINAL
+export TERMINAL=alacritty
