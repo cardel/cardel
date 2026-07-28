@@ -3,14 +3,10 @@
 #8a8987
 ### Do not remove above lines ###
 ###       START CONFIG        ###
-[manager]
+[mgr]
 cwd =             { fg = "#ccaa68" }
 find_keyword =    { fg = "#c2914a", bold = true, italic = true, underline = true }
 marker_selected = { fg = "#c2914a", bg = "#c2914a" }
-
-
-hovered =         { reversed = true }
-preview_hovered = { underline = true }
 
 # Marker
 marker_copied = { fg = "#E2D61D", bg = "#E2D61D" }
@@ -19,35 +15,44 @@ marker_marked = { fg = "#C738B2", bg = "#C738B2" }
 # Count
 count_copied = { fg = "#1E1E2E", bg = "#E2D61D" }
 count_cut =    { fg = "#1E1E2E", bg = "#2E8FD1" }
-
-# Tab
-tab_width = 1
-tab_inactive = {}
-tab_active = { reversed = true }
-
-# Count
 count_selected = { fg = "#1e1e2e", bg = "#c2914a" }
 
 # Border
 border_symbol = "│"
 border_style = { fg = "#8a8987" }
 
-[status]
-separator_open = ""
-separator_close = ""
-separator_style = { fg = "#8a8987", bg = "#8a8987" }
+# Indicador del archivo bajo el cursor (antes manager.hovered/preview_hovered)
+[indicator]
+parent =  { reversed = true }
+current = { reversed = true }
+preview = { underline = true }
 
-# Mode
-mode_normal = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
-mode_select = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
-mode_unset =  { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+# Antes manager.tab_active/tab_inactive (tab_width ya no existe)
+[tabs]
+active =   { reversed = true }
+inactive = {}
+
+# Antes status.mode_normal/mode_select/mode_unset
+[mode]
+normal_main = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+normal_alt =  { fg = "#c2914a", bg = "#8a8987" }
+select_main = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+select_alt =  { fg = "#c2914a", bg = "#8a8987" }
+unset_main =  { fg = "#1e1e2e", bg = "#c2914a", bold = true }
+unset_alt =   { fg = "#c2914a", bg = "#8a8987" }
+
+[status]
+# Antes separator_open / separator_close
+sep_left =  { open = "", close = "" }
+sep_right = { open = "", close = "" }
 
 # Progress
 progress_label =  { fg = "#FFFFFF", bold = true }
 progress_normal = { fg = "#c2914a", bg = "#8a8987" }
 progress_error =  { fg = "#FF1300", bg = "#8a8987" }
 
-[select]
+# Antes [select]
+[pick]
 border = { fg = "#c2914a" }
 active = { fg = "#c2914a", bold = true }
 inactive = {}
@@ -58,7 +63,8 @@ value = {}
 border =   { fg = "#c2914a" }
 selected = { reversed = true }
 
-[completion]
+# Antes [completion]
+[cmp]
 border = { fg = "#c2914a" }
 
 [tasks]
@@ -84,8 +90,8 @@ title_error = { fg = "#FF1300" }
 
 [icon]
 globs = [
-  { name = "*/hypr/hypr*.conf",          text = "", fg = "#00aaae" },
-  { name = "*/hypr/user_configs/*.conf", text = "", fg = "#00aaae" },
+  { url = "*/hypr/hypr*.conf",          text = "", fg = "#00aaae" },
+  { url = "*/hypr/user_configs/*.conf", text = "", fg = "#00aaae" },
 ]
 prepend_dirs  = [
 	{ name = ".config",     text = "", fg = "#89E051" },
@@ -151,5 +157,5 @@ prepend_conds = [
 ]
 
 [filetype]
-rules = [{ name = "*", fg = "#ccaa68" }, { name = "*/", fg = "#c2914a" }]
+rules = [{ url = "*", fg = "#ccaa68" }, { url = "*/", fg = "#c2914a" }]
 ###       END CONFIG        ###

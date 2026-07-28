@@ -1,0 +1,4 @@
+# Plugins de yazi gestionados por `ya pkg install`.
+# yazi/yazi/package.toml los fija con rev + hash, así que se reconstruyen
+# idénticos en cualquier máquina; no hace falta versionar código de terceros.
+yazi/yazi/plugins/

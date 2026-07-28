@@ -1,5 +1,4 @@
-# If you encounter any issues, please make an issue at https://github.com/yazi-rs/schemas.
-"$schema" = "https://yazi-rs.github.io/schemas/theme.json"
+# Nota: yazi >= 26 rechaza la clave "$schema" (las claves deben ser kebab-case).
 [flavor]
 dark = "dots"
 light = "dots"
