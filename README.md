@@ -1,117 +1,57 @@
-### Hi there 👋
+### Hi there, I'm Carlos A. Delgado 👋
 
-I'm an electronic and computer engineer with a master in computer engineering. I have solid experience in Python, Java and C++. Looking forward to provide solutions to difficult problems applying design patterns and good practices that enable the team to scale and maintain the code.
+**PhD candidate in Engineering (Computer Science)** · **University lecturer (13+ years)** · **Software & cloud engineer**
+AWS Certified Cloud Practitioner · AWS Certified AI Practitioner
 
-Experience working with AWS and Azure to solve  machine learning problems. Excellent background in computer science that helps me to decide the best approach on complex scenarios where multiple options are available.
+I teach, research, and build. I like turning hard problems into small, clean, well-explained solutions — and then teaching how they work.
 
+- 🎓 I lecture on functional and imperative programming, algorithms, discrete mathematics, programming-language theory, and cloud computing at Javeriana Cali, ICESI and Universidad del Valle.
+- 🔬 My research is on mutation testing for the security of cloud REST APIs, and on multifractality and robustness in complex networks.
+- ☁️ I build modern data platforms and services in Python and Java on AWS — Iceberg, Trino, Spark and Airflow, with IAM and containers.
+- 📺 I record my classes: hundreds of lectures organized by course on [YouTube](https://www.youtube.com/@cardel87/playlists).
+- 🌐 Website & materials: **[cardel.github.io](https://cardel.github.io/)** · Course notes: **[cardel.github.io/notasUniversidad](https://cardel.github.io/notasUniversidad/)**
+- 📫 Reach me at cardel87@gmail.com
 
-## My Skill Set  
-<table><tr><td valign="top" width="33%">
+---
 
+### Languages & tools
 
-### Frontend  
-<div align="center">  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/html5-original-wordmark.svg" alt="HTML5" height="50" />  
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/csharp-original.svg" alt="C#" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/mysql-original-wordmark.svg" alt="MySQL" height="50" />  
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/keras.png" alt="Keras" height="50" />
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/jquery.png" alt="jQuery" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/microsoft_azure-icon.svg" alt="Azure" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/linux-original.svg" alt="Linux" height="50" />  -->
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/css3-original-wordmark.svg" alt="CSS3" height="50" />  
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/python-original.svg" alt="Python" height="50" />  -->
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/javascript-original.svg" alt="JavaScript" height="50" />  
-</div>
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![C++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
+![Scala](https://img.shields.io/badge/Scala-DC322F?style=for-the-badge&logo=scala&logoColor=white)
+![Racket](https://img.shields.io/badge/Racket-9F1D20?style=for-the-badge&logo=racket&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-</td><td valign="top" width="33%">
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Keras](https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white)
 
-### Backend  
-<div align="center">  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/cplusplus-original.svg" alt="C++" height="50" /> <img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/java-original-wordmark.svg" alt="Java" height="50" />   
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/php-original.svg" alt="PHP" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/linux-original.svg" alt="Linux" height="50" />  -->
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/python-original.svg" alt="Python" height="50" />  
-<!--<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/git-scm-icon.svg" alt="Git" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/gnu_bash-icon.svg" alt="Bash" height="50" />  
-<img style="margin: 10px"  src="https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png" alt"Sklearn" height="50" />
- <img style="margin: 10px"  src="https://pandas.pydata.org/static/img/pandas.svg" alt="Pandas" height="50" />
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/keras.png" alt="Keras" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/html5-original-wordmark.svg" alt="HTML5" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/dot-net-original-wordmark.svg" alt=".NET" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/csharp-original.svg" alt="C#" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/latex.png" alt="Latex" height="50" />  -->
-</div>
+---
 
-</td><td valign="top" width="33%">
+### GitHub stats
 
-
-### DevOps  
-<div align="center">  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/amazonwebservices-original-wordmark.svg" alt="AWS" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/linux-original.svg" alt="Linux" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/git-scm-icon.svg" alt="Git" height="50" />  
-<img style="margin: 10px" src="https://profilinator.rishav.dev/skills-assets/microsoft_azure-icon.svg" alt="Azure" height="50" />  
-</div>
-
-</td></tr></table>  
-
-<br/>  
-
-
-
-
-## Github Stats  
 <table>
  <tr>
   <td valign="top" width="50%">
- <div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>  </td>
+   <div align="center"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=cardel&hide_border=true&layout=compact" align="center" /></div>
+  </td>
   <td valign="top" width="50%">
-<div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>
+   <div align="center"><img src="https://github-readme-stats.vercel.app/api?username=cardel&show_icons=true&count_private=true&hide_border=true" align="center" /></div>
   </td>
  </tr>
 </table>
-<br/>  
 
-## Connect with me  
+---
+
+### Connect with me
+
 <div align="center">
-<a href="https://github.com/cardel" target="_blank">
-<img src=https://img.shields.io/badge/github-%2324292e.svg?&style=for-the-badge&logo=github&logoColor=white alt=github style="margin-bottom: 5px;" />
-</a>
-<a href="https://twitter.com/cardel87" target="_blank">
-<img src=https://img.shields.io/badge/twitter-%2300acee.svg?&style=for-the-badge&logo=twitter&logoColor=white alt=twitter style="margin-bottom: 5px;" />
-</a>
-<!--<a href="https://dev.to/rishavanand" target="_blank">
-<img src=https://img.shields.io/badge/dev.to-%2308090A.svg?&style=for-the-badge&logo=dev.to&logoColor=white alt=devto style="margin-bottom: 5px;" />
-</a>-->
-<a href="https://linkedin.com/in/cardel" target="_blank">
-<img src=https://img.shields.io/badge/linkedin-%231E77B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white alt=linkedin style="margin-bottom: 5px;" />
-</a>
-<!--<a href="https://www.facebook.com/cardel87" target="_blank">
-<img src=https://img.shields.io/badge/facebook-%232E87FB.svg?&style=for-the-badge&logo=facebook&logoColor=white alt=facebook style="margin-bottom: 5px;" />
-</a>-->
- <!--
-<a href="https://instagram.com/iamrishavanand" target="_blank">
-<img src=https://img.shields.io/badge/instagram-%23000000.svg?&style=for-the-badge&logo=instagram&logoColor=white alt=instagram style="margin-bottom: 5px;" />
-</a>  --->
-</div>  
-  
-
-<br/>  
-
-
-
-
-<!--
-**cardel/cardel** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-
-Here are some ideas to get you started:
-
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+<a href="https://cardel.github.io/" target="_blank"><img src="https://img.shields.io/badge/Website-6d28d9?style=for-the-badge&logo=aboutdotme&logoColor=white" alt="website" /></a>
+<a href="https://www.youtube.com/@cardel87/playlists" target="_blank"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="youtube" /></a>
+<a href="https://linkedin.com/in/cardel" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-1E77B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="linkedin" /></a>
+<a href="https://orcid.org/0000-0002-1146-3057" target="_blank"><img src="https://img.shields.io/badge/ORCID-A6CE39?style=for-the-badge&logo=orcid&logoColor=white" alt="orcid" /></a>
+</div>
