@@ -1,1 +1,32 @@
 # Nota: yazi >= 26 rechaza la clave "$schema" (las claves deben ser kebab-case).
+
+# Previsualización de imágenes y PDF con chafa.
+#
+# Alacritty no implementa ningún protocolo gráfico (ni kitty ni sixel), así que
+# los adaptadores rápidos de yazi quedan descartados. El que yazi elige solo en
+# esta máquina es `Wayland`, porque `Adapter::matches` decide por el entorno
+# (XDG_SESSION_TYPE / WAYLAND_DISPLAY / DISPLAY) y no por qué binarios existen;
+# ese adaptador delega en ueberzugpp, que no está instalado, y falla en silencio.
+#
+# yazi trae un adaptador chafa, pero solo cae en él cuando *no* logra detectar
+# la sesión gráfica: forzarlo exigiría arrancar con
+# `env -u XDG_SESSION_TYPE -u WAYLAND_DISPLAY -u DISPLAY yazi`, y esa ceguera la
+# heredarían todos los procesos hijos (xdg-open, wl-copy). En vez de eso se
+# invoca chafa como previewer vía piper, que pinta su salida ANSI en el panel.
+#
+# Flags de chafa que importan:
+#   --polite on    no emitir secuencias de cursor (?25l/?25h) que ensuciarían
+#                  el panel, ya que aquí la salida es texto, no una sesión.
+#   --relative off terminar cada fila con salto de línea en vez de mover el
+#                  cursor, que es lo que piper lee línea a línea.
+#   --view-size    piper expone el tamaño del panel como $w y $h.
+
+[[plugin.prepend_previewers]]
+mime = "image/*"
+run = 'piper -- chafa -f symbols --polite on --relative off --view-size "${w}x${h}" "$1"'
+
+# pdftoppm (poppler) rasteriza solo la primera página y la manda a chafa por
+# stdin (`-`). 150 dpi es suficiente para el tamaño de un panel de terminal.
+[[plugin.prepend_previewers]]
+mime = "application/pdf"
+run = 'piper -- pdftoppm -png -r 150 -f 1 -l 1 "$1" | chafa -f symbols --polite on --relative off --view-size "${w}x${h}" -'

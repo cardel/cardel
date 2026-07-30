@@ -36,6 +36,9 @@ Missing fonts cause silent rendering failures (wrong glyphs, broken box-drawing)
 ### Clipboard
 Alacritty and tmux prefer `wl-clipboard` (Wayland) or `xclip` (X11) for the `y` copy-mode keybind. OSC 52 clipboard works without them.
 
+### yazi image/PDF preview (`yazi/`)
+Requires `chafa` and `poppler` (`pdftoppm`). Alacritty implements no graphics protocol, and the adapter yazi picks on its own (`Wayland`) delegates to `ueberzugpp` — `Adapter::matches` decides from `XDG_SESSION_TYPE`/`WAYLAND_DISPLAY`/`DISPLAY`, not from which binaries exist, so it fails silently. `yazi.toml` sidesteps this by piping `chafa` into the preview pane via the `piper` plugin instead of forcing yazi's own chafa adapter (which would require blinding yazi to the graphical session, and every child process — `xdg-open`, `wl-copy` — would inherit that).
+
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
 
