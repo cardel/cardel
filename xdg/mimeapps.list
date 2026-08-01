@@ -1,0 +1,14 @@
+[Added Associations]
+application/pdf=com.google.Chrome.desktop;com.github.xournalpp.xournalpp.desktop;org.gnome.Evince.desktop;
+application/x-zerosize=geany.desktop;
+image/jpeg=chromium.desktop;feh.desktop;
+image/png=swayimg.desktop;gimp.desktop;
+message/rfc822=vivaldi-stable.desktop;
+text/csv=libreoffice-calc.desktop;geany.desktop;
+text/plain=geany.desktop;
+text/x-tex=geany.desktop;
+[Default Applications]
+application/pdf=org.gnome.Evince.desktop;
+inode/directory=yazi.desktop;
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop;
+x-scheme-handler/terminal=Alacritty.desktop;
