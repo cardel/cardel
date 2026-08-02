@@ -25,6 +25,20 @@ fi
 ln -sfn -- "$SRC_CONF" "$DST_CONF"
 echo "linked $DST_CONF -> $SRC_CONF"
 
+# plugins/ is gitignored -- package.toml pins every dep by rev and hash, so it is
+# rebuilt here instead of vendored. Without this step a fresh clone links a
+# yazi.toml whose previewers call a `piper` that isn't on disk, and yazi only
+# complains once you open an image.
+#
+# This also redeploys flavors/dracula.yazi, which *is* tracked; it matches the
+# pinned rev today, so the tree stays clean. If a `ya pkg upgrade` ever moves that
+# rev, the new files show up in git status -- commit them or gitignore the flavor.
+if command -v ya >/dev/null 2>&1; then
+  ya pkg install
+else
+  echo "note: ya not found, so plugins were not installed (pacman -S yazi)" >&2
+fi
+
 # yazi parses its config at startup and silently falls back to preset settings
 # on error, so surface a bad config here instead of at first launch.
 if command -v yazi >/dev/null 2>&1; then
