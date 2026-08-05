@@ -7,6 +7,8 @@ message/rfc822=vivaldi-stable.desktop;
 text/csv=libreoffice-calc.desktop;geany.desktop;
 text/plain=geany.desktop;
 text/x-tex=geany.desktop;
+application/json=geany.desktop;
+
 [Default Applications]
 application/pdf=org.gnome.Evince.desktop;
 inode/directory=yazi.desktop;
