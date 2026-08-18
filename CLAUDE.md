@@ -22,6 +22,32 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 
 `yazi/` is tracked in the repo.
 
+## graft does not apply here
+
+The global instruction is "graft first, always". **This repo is the exception**, and
+it is not a matter of the index being stale — graft cannot parse anything here.
+
+Measured with `@nanonets/graft@0.10.1` (the latest published version) on a copy of
+this repo: `wiring: 0 nodes, 0 edges, 0 cards — parsed: 0 of 0 files`. The graph
+comes out empty and `INDEX.md` is 10 lines of boilerplate.
+
+The reason is graft's language registry. Its depth tier covers ts/tsx/js/jsx/py/go/java
+(`dist/graph/extract.js`) and its breadth tier adds rust, c, cpp, ruby, php, c#,
+kotlin, scala, swift, elixir, solidity, ocaml, zig and dart (`GENERIC_LANGS` in
+`dist/graph/generic.js`). Neither tier has a row for **Lua or Bash**, which is all
+the code this repo contains — 12 `.lua` and 6 `.sh`, plus TOML, JSON and Markdown.
+The `tree-sitter-lua.wasm` and `tree-sitter-bash.wasm` grammars do ship inside the
+package, so supporting them upstream is one registry row plus a `queries/<name>.scm`;
+until that lands there is nothing to index.
+
+`~/repositorios/work/scripts/bootstrap-graft.sh` reaches the same conclusion on its
+own: its `UMBRAL` counts files matching a code-extension list that excludes `.lua`
+and `.sh`, so it scores this repo at 0 and skips it.
+
+So: navigate this repo with `grep`, `Read` and the file tree. Do not wire `.mcp.json`
+here and do not query graft for it — an empty graph answers "not found" for code that
+does exist, which is worse than not asking.
+
 ## Key gotchas
 
 ### Terminal compatibility
