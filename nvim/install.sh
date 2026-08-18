@@ -60,12 +60,12 @@ nvim --headless "+Lazy! install" +qa
 #
 # Los adaptadores de Java (java-debug-adapter, java-test) no van en esta lista:
 # los pide el extra lang.java por su cuenta en cuanto nvim-dap existe.
-TOOLS=(debugpy bash-debug-adapter yamllint actionlint ltex-ls-plus taplo)
+TOOLS=(debugpy bash-debug-adapter yamllint actionlint taplo)
 echo "instalando herramientas de mason: ${TOOLS[*]}"
 nvim --headless "+Lazy! load mason.nvim" "+MasonInstall ${TOOLS[*]}" +qa ||
   echo "aviso: MasonInstall fallo en headless; abre nvim y usa :Mason" >&2
 
 echo
-echo "listo."
-echo "Para Racket hace falta un paso mas, porque no esta en mason:"
-echo "  raco pkg install racket-langserver"
+echo "listo. Faltan dos servidores que no vienen por mason:"
+echo "  raco pkg install racket-langserver     (Racket)"
+echo "  abre un .scala y ejecuta :MetalsInstall (Scala; usa coursier)"

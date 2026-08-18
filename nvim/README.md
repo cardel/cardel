@@ -12,10 +12,11 @@ Enlaza `nvim/` en `~/.config/nvim`, enlaza `yamllint/config` en
 configuración real (no un enlace), la respalda con marca de tiempo antes de
 tocarla.
 
-Un paso queda fuera porque mason no lo empaqueta:
+Dos servidores quedan fuera porque mason no los empaqueta:
 
 ```sh
-raco pkg install racket-langserver
+raco pkg install racket-langserver     # Racket
+# y, con un .scala abierto:  :MetalsInstall   (Scala; usa coursier)
 ```
 
 ## Qué se versiona y qué no
@@ -51,6 +52,7 @@ Contando archivos en `~/repositorios`, lo que de verdad se edita aquí es:
 | YAML | 145 | `lang.yaml` | solo esquemas, **sin linter** |
 | JSON | 118 | `lang.json` | SchemaStore |
 | Java | 1607 | `lang.java` | jdtls, **sin depuración ni tests** |
+| Scala | 362 | — | **nada** |
 | Workflows GH | 107 | — | **sin actionlint** |
 | CMake | 104 | `lang.cmake` | neocmakelsp + cmakelint |
 | Docker | 84 | `lang.docker` | hadolint |
@@ -97,17 +99,18 @@ Los huecos reales eran YAML (145 archivos sin revisar) y los workflows de GitHub
 ni los `runs-on`). Al conectar actionlint, lo primero que reportó fueron dos
 acciones obsoletas en `notasUniversidad/.github/workflows/pages.yml`.
 
-### 3. Prosa en español: el hueco más grande
+### 3. Scala: 362 archivos sin nada
 
-Entre Markdown, LaTeX y BibTeX son ~826 archivos, casi todos en español, y
-Neovim no revisaba una sola palabra. texlab y marksman ven estructura;
-markdownlint-cli2 ve estilo de Markdown, no prosa.
+Y todos dentro de proyectos **Gradle** (`settings.gradle` + el plugin `scala`,
+Scala 2.13, ScalaTest); no hay un solo `build.sbt` en el árbol, aunque `sbt`,
+`scala` y `coursier` sí están instalados vía coursier.
 
-Zed ya lo tenía resuelto (`zed/settings.json` → `lsp.ltex.settings.ltex.language
-= "es"`). Ahora Neovim usa el mismo servidor con la misma configuración, en la
-variante mantenida (`ltex-ls-plus`; el `ltex-ls` original lleva años sin
-releases). Comprobado sobre un texto de prueba: detecta concordancia (*«un
-prueba»*, *«los estudiante»*) y tildes faltantes, con los mensajes en español.
+El extra `lang.scala` trae nvim-metals, y Metals **implementa el Debug Adapter
+por su cuenta**: no hace falta ningún adaptador de mason, basta
+`require("metals").setup_dap()` — que el extra ya llama. Con eso quedan las
+configuraciones `RunOrTest` y `Test Target`.
+
+Dos cosas del extra no servían tal cual aquí; ver `lua/plugins/scala.lua`.
 
 ### 4. Racket sin soporte
 
@@ -122,6 +125,7 @@ En `lazyvim.json`:
 
 - `dap.core` — nvim-dap, dap-ui, virtual-text, mason-nvim-dap
 - `dap.nlua` — depurar la propia configuración de Neovim
+- `lang.scala` — nvim-metals, con su propio Debug Adapter
 - `lang.toml` — taplo (26 archivos, incluidos los de este repo)
 
 Archivos nuevos en `lua/plugins/`, cada uno independiente y borrable por
@@ -131,23 +135,67 @@ separado:
 |---|---|
 | `dap.lua` | `debugpy` y `bash-debug-adapter` en mason; `<leader>td` para depurar el test bajo el cursor |
 | `linting.lua` | yamllint para YAML, actionlint restringido a `.github/workflows/`, shellcheck explícito |
-| `prose.lua` | `ltex-ls-plus` en español para md/tex/bib/gitcommit |
 | `racket.lua` | parser de treesitter, `racket_langserver`, paredit en `.rkt` |
+| `scala.lua` | arregla el choque metals/jdtls y el atajo roto del extra; añade el *attach* de Gradle |
 
 Y `yamllint/config`, que baja el ruido de las reglas de fábrica. Un `.yamllint`
 dentro de un proyecto sigue teniendo prioridad sobre él.
 
-Dos detalles que se comprobaron a mano porque las recetas que circulan los
-tienen mal:
+Cuatro detalles que se comprobaron a mano, porque las recetas que circulan los
+tienen mal o porque los extras de LazyVim no encajan con el resto de esta
+configuración:
 
 - Neovim 0.12 le pone filetype `yaml` a secas a los archivos de
   `.github/workflows/`, no `yaml.github`. Por eso actionlint va en la lista de
   `yaml` y se filtra con `condition`, no con un filetype aparte.
 - LazyVim declara mason con `cmd = "Mason"` solamente, así que en un arranque
   headless `:MasonInstall` no existe hasta que se carga el plugin a mano.
+- El extra `lang.scala` ata metals a los filetypes `scala`, `sbt` **y `java`**.
+  Con `lang.java` habilitado eso significaba dos servidores sobre el mismo
+  buffer: al abrir un `.java` arrancaban jdtls y metals, y metals se ponía a
+  pedir permiso para importar el build. `scala.lua` reemplaza el `config` del
+  extra para limitar el autocmd a Scala (`ft` no se puede recortar: lazy.nvim
+  concatena esas listas entre specs, no las reemplaza). Comprobado: ahora un
+  `.java` solo levanta jdtls.
+- El mismo extra mapea `<leader>me` a `require("telescope")`, pero LazyVim usa
+  snacks.picker desde la v15 y aquí no hay telescope: ese atajo reventaba con
+  *module 'telescope' not found*. Se cambió por `require("metals").commands()`,
+  que usa `vim.ui.select`.
 
-Resultado: 59 plugins (0 con error), 36 paquetes de mason, ~234 ms de arranque
+Resultado: 60 plugins (0 con error), 35 paquetes de mason, ~234 ms de arranque
 con un `.py` abierto.
+
+## Depurar proyectos Gradle
+
+Casi todo lo que hay aquí compila con Gradle: 51 wrappers `gradlew` en el árbol,
+y tanto los talleres de Java como los de Scala. No hace falta nada específico de
+Gradle en la configuración, pero conviene saber por dónde va cada camino.
+
+**Java.** jdtls importa proyectos Gradle por su cuenta —usa el Tooling API, no
+el `gradle` del sistema, así que basta con el wrapper del proyecto—. Comprobado
+sobre `Talleres-base/ada-2023-2-…`: arranca el demonio de Gradle, sincroniza el
+módulo y queda `ServiceReady`. Con `dap.core` habilitado, `dap_main` escanea las
+clases `main` del proyecto y `test = true` engancha java-test, así que
+`<leader>dc` ya lista configuraciones reales.
+
+**Scala.** Metals importa el build a través de Bloop. Gradle es su integración
+menos pulida —necesita que el build aplique el plugin `scala`, que es el caso
+aquí— y la primera importación tarda. Si no arranca sola: `<leader>mi`
+(*import build*) y `<leader>mD` (*doctor*), que dice exactamente qué le falta.
+
+**El camino que siempre funciona, para los dos.** Lanzar la tarea de Gradle
+suspendida y engancharse:
+
+```sh
+./gradlew test --debug-jvm     # queda esperando en el puerto 5005
+./gradlew run  --debug-jvm
+```
+
+y desde nvim `<leader>dc`. Para Java el extra `lang.java` ya trae *Debug
+(Attach) - Remote* en ese puerto; el equivalente de Scala lo añade `scala.lua`.
+Esto depura exactamente lo que ejecuta Gradle, con el classpath y los `jvmArgs`
+del `build.gradle` —que en estos talleres importan, porque suben la memoria a
+2 GB y el stack a 8 MB—.
 
 ## Lo que se dejó igual, a propósito
 
@@ -159,11 +207,20 @@ despreciable —todo se carga de forma diferida— y porque `lang.clojure` es lo
 trae `nvim-paredit`, que ahora usa Racket. Quitarlos es cambiar una línea de
 `lazyvim.json` si alguna vez estorban.
 
+También se probó y se descartó **ltex-ls-plus** para revisar gramática y
+ortografía en español en Markdown y LaTeX. Funcionaba —detectaba concordancia y
+tildes, con los mensajes en español, igual que el `ltex` que Zed ya tiene
+configurado en `zed/settings.json`— pero es un servidor Java con LanguageTool
+dentro: ~500 MB de RSS y varios segundos hasta el primer diagnóstico cada vez
+que se abre un `.md`. Para revisar prosa está Zed. Si alguna vez se quiere de
+vuelta, es un archivo en `lua/plugins/` con `ltex_plus` y
+`settings.ltex.language = "es"`.
+
 ## Ideas para después
 
 - `ai.claudecode` — extra de LazyVim para Claude Code dentro del editor.
 - `editor.harpoon2` o `util.project` — saltar entre repos, que aquí hay ~100.
 - Un `.markdownlint.yaml` propio: las reglas de fábrica son estrictas con las
   líneas largas y los encabezados repetidos.
-- Poblar `ltex.dictionary.es` en `prose.lua` con la jerga recurrente (nombres de
-  herramientas, términos técnicos) para que deje de marcarlos.
+- MiniZinc son 147 archivos y no hay nada: ni parser de treesitter ni LSP
+  decente. Habría que escribirlo.

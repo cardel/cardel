@@ -43,10 +43,11 @@ Requires `chafa` and `poppler` (`pdftoppm`). Alacritty implements no graphics pr
 ### Neovim / LazyVim (`nvim/`)
 `~/.config/nvim` is a symlink into this repo, so `lazy-lock.json` is a tracked file that changes on every `:Lazy update` — commit it, that lockfile is what makes another machine reproducible. Plugins (`~/.local/share/nvim/lazy`) and mason tools are *not* tracked; `install.sh` rebuilds both.
 
-Three things that are easy to get wrong:
+Four things that are easy to get wrong:
 - LazyVim's language extras declare their DAP block with `optional = true`, so it stays inert until `dap.core` is enabled. Enabling `dap.core` retroactively activates debugging for Python and Java without touching those extras.
 - Neovim gives `.github/workflows/*.yml` the plain `yaml` filetype, not `yaml.github`. actionlint is therefore registered under `yaml` and restricted by path with nvim-lint's `condition`.
 - mason is declared with `cmd = "Mason"` only, so `:MasonInstall` does not exist in a headless run until the plugin is loaded explicitly.
+- The `lang.scala` extra binds nvim-metals to filetypes `scala`, `sbt` *and* `java`, which collides with jdtls from `lang.java`. `lua/plugins/scala.lua` replaces the extra's `config` to restrict the autocmd to Scala — `ft` cannot be narrowed from an override, since lazy.nvim concatenates `ft`/`event`/`cmd`/`keys` across specs instead of replacing them. That same extra maps `<leader>me` to telescope, which is not installed (LazyVim uses snacks.picker).
 
 `yamllint/config` lives under `nvim/` because nvim-lint is what invokes yamllint; a project-level `.yamllint` still wins over it.
 
