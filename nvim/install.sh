@@ -47,23 +47,46 @@ if ! command -v nvim >/dev/null 2>&1; then
   exit 0
 fi
 
-# `install` y no `sync`: instala lo que falte respetando lazy-lock.json y no
-# actualiza a ciegas lo que ya estaba, que es justo lo que hace reproducible el
-# lockfile. Para actualizar a proposito: :Lazy update
-echo "instalando plugins que falten (lazy.nvim)..."
+# El lockfile no sobrevive al primer arranque en una maquina limpia, asi que se
+# guarda una copia antes de tocar nada.
+#
+# Por que: la spec de LazyVim se importa desde el plugin LazyVim, que hay que
+# clonar primero, asi que lazy.nvim instala en varias rondas
+# ("while M.install_missing() do" en lazy/core/loader.lua). Cada ronda termina
+# llamando a Lock.update(), que vacia la tabla del lockfile en memoria y la
+# reescribe con lo que ya hay en disco. En la segunda ronda ya no queda entrada
+# para los plugins que faltan, y el checkout se va al HEAD de la rama.
+#
+# Medido en un entorno limpio: de 60 plugins, 25 quedaron en el commit fijado
+# (los de la primera ronda, LazyVim incluido) y 35 en HEAD.
+#
+# Devolver el lockfile y correr restore despues arregla las dos cosas de golpe:
+# restore si respeta el archivo, y con todo ya clonado alcanza -- restore solo
+# toca plugins instalados (filtra por plugin._.installed).
+LOCK="$SRC_CONF/lazy-lock.json"
+LOCK_BAK=""
+if [[ -f "$LOCK" ]]; then
+  LOCK_BAK="$(mktemp)"
+  cp -- "$LOCK" "$LOCK_BAK"
+fi
+
+echo "instalando plugins (lazy.nvim)..."
 nvim --headless "+Lazy! install" +qa
 
-# mason.nvim se carga de forma diferida y LazyVim solo declara `cmd = "Mason"`,
-# asi que sin cargarlo antes el stub de :MasonInstall ni siquiera existe
-# ("E492: Not an editor command"). Con el plugin cargado, MasonInstall bloquea
-# hasta terminar en modo headless.
-#
-# Los adaptadores de Java (java-debug-adapter, java-test) no van en esta lista:
-# los pide el extra lang.java por su cuenta en cuanto nvim-dap existe.
-TOOLS=(debugpy bash-debug-adapter yamllint actionlint taplo)
-echo "instalando herramientas de mason: ${TOOLS[*]}"
-nvim --headless "+Lazy! load mason.nvim" "+MasonInstall ${TOOLS[*]}" +qa ||
-  echo "aviso: MasonInstall fallo en headless; abre nvim y usa :Mason" >&2
+if [[ -n "$LOCK_BAK" ]]; then
+  cp -- "$LOCK_BAK" "$LOCK"
+  rm -f -- "$LOCK_BAK"
+  echo "fijando cada plugin al commit del lockfile..."
+  nvim --headless "+Lazy! restore" +qa
+fi
+
+# mason instala bajo demanda: las herramientas de ensure_installed al cargar
+# mason.nvim (de forma asincrona, o sea que un headless se muere antes) y los
+# servidores LSP recien al abrir un archivo de ese tipo. mason-bootstrap.lua
+# calcula la lista completa desde la configuracion y la instala de una vez, para
+# que los fallos aparezcan aqui y no dentro de un mes al abrir un .java.
+echo "instalando servidores y herramientas de mason..."
+nvim --headless -c "luafile $SRC_DIR/mason-bootstrap.lua" -c qa
 
 echo
 echo "listo. Faltan dos servidores que no vienen por mason:"

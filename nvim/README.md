@@ -19,6 +19,75 @@ raco pkg install racket-langserver     # Racket
 # y, con un .scala abierto:  :MetalsInstall   (Scala; usa coursier)
 ```
 
+## Requisitos de la máquina
+
+mason no trae compiladores ni runtimes: descarga o compila usando lo que ya haya
+en el sistema. De los 35 paquetes que instala esta configuración, 11 vienen de
+npm, 5 de PyPI, 2 son extensiones de VS Code (Java) y el resto son binarios de
+GitHub. O sea:
+
+| Necesario | Para qué |
+|---|---|
+| `neovim` ≥ 0.11, `git`, `curl`, `unzip`, `tar` | lo básico de lazy.nvim y mason |
+| `nodejs` + `npm` | 11 servidores: json, yaml, bash, docker, ansible, elm, pyright, markdownlint… |
+| `python` + `pip` | debugpy, yamllint, ansible-lint, cmakelang |
+| `jdk` (≥ 17) | jdtls y sus adaptadores de depuración |
+| `racket` (opcional) | solo si se va a usar `racket-langserver` |
+| `coursier` (opcional) | solo para `:MetalsInstall` (Scala) |
+
+Si falta alguno, `install.sh` **no se detiene**: instala todo lo demás y lista al
+final lo que falló, con el nombre del paquete. Ese es el sentido de
+`mason-bootstrap.lua` — que un servidor roto se vea el día de la instalación y
+no dentro de un mes, la primera vez que se abra un archivo de ese tipo. Fue así
+como apareció el problema de `erlang-ls`, que se compila con `rebar3`.
+
+## Replicar esto en otra máquina
+
+```sh
+git clone <este repo> && cd cardel/nvim && ./install.sh
+```
+
+Eso reproduce el entorno **exacto**, no uno parecido. Verificado clonando el
+repo en un `XDG_CONFIG_HOME`/`XDG_DATA_HOME` limpios: 60 plugins en el mismo
+commit que aquí, `lazy-lock.json` idéntico byte a byte, y los mismos 35 paquetes
+de mason. Poco más de un minuto.
+
+Dos cosas que conviene saber antes:
+
+- **`install.sh` reemplaza la configuración que haya**, no la fusiona. Si en la
+  otra máquina ya hay un LazyVim con retoques propios, se los lleva por delante
+  (los respalda en `~/.config/nvim.bak.<fecha>`, pero respaldar no es fusionar).
+  Para conservarlos hay que sacarlos a mano del respaldo y meterlos en
+  `lua/plugins/`.
+- **`~/.config/nvim` queda como enlace a este repo.** A partir de ahí, cualquier
+  `:Lazy update` en cualquiera de las dos máquinas modifica `lazy-lock.json`
+  dentro del repo. Es lo que se quiere —así es como se propaga una actualización
+  al portátil— pero hay que commitear y hacer push, o las máquinas divergen.
+
+### Por qué install.sh hace copia del lockfile
+
+Parece un rodeo innecesario y no lo es. En una máquina limpia, el primer
+arranque de Neovim **destruye `lazy-lock.json`** antes de que nadie pueda
+usarlo.
+
+La spec de LazyVim se importa desde el propio plugin LazyVim, así que lazy.nvim
+no puede conocer la lista completa hasta haberlo clonado: instala en varias
+rondas (`while M.install_missing() do`, en `lazy/core/loader.lua`). Cada ronda
+termina llamando a `Lock.update()`, que **vacía la tabla del lockfile en memoria**
+y la reescribe con lo que ya hay en disco. En la segunda ronda ya no queda
+entrada para los plugins que faltan, y el checkout se va al HEAD de la rama.
+
+Medido: de 60 plugins, 25 quedaron en el commit fijado —los de la primera ronda,
+LazyVim incluido— y 35 en HEAD, con el lockfile reescrito. El resultado es
+coherente consigo mismo, así que no salta ningún error: simplemente la otra
+máquina acaba con versiones distintas.
+
+Ni `:Lazy! install` ni pasarle `lockfile = true` a la API de lua lo evitan,
+porque el daño ocurre durante el arranque, antes de que se ejecute cualquier
+`-c`. Lo que sí funciona —y es lo que hace `install.sh`— es guardar el archivo
+antes, devolverlo después y correr `:Lazy! restore`, que sí lo respeta. Con eso
+el resultado es idéntico byte a byte.
+
 ## Qué se versiona y qué no
 
 | Ruta | Versionado | Por qué |
