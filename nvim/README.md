@@ -199,13 +199,24 @@ del `build.gradle` —que en estos talleres importan, porque suben la memoria a
 
 ## Lo que se dejó igual, a propósito
 
-Hay seis extras habilitados sin un solo archivo de ese lenguaje en
-`~/repositorios`: `lang.elm`, `lang.erlang`, `lang.clojure`, `lang.terraform`,
-`lang.ansible` y `lang.helm`. Se quedan porque son plausibles para lo que se
-enseña (cloud, lenguajes de programación), porque el coste medido es
-despreciable —todo se carga de forma diferida— y porque `lang.clojure` es lo que
-trae `nvim-paredit`, que ahora usa Racket. Quitarlos es cambiar una línea de
-`lazyvim.json` si alguna vez estorban.
+Quedan cinco extras habilitados sin un solo archivo de ese lenguaje en
+`~/repositorios`: `lang.elm`, `lang.clojure`, `lang.terraform`, `lang.ansible` y
+`lang.helm`. Se quedan porque son plausibles para lo que se enseña (cloud,
+lenguajes de programación), porque sus servidores se instalan y cargan sin
+problema, y porque `lang.clojure` es lo que trae `nvim-paredit`, que ahora usa
+Racket.
+
+**`lang.erlang` sí se quitó**, porque no era gratis: declara el servidor
+`erlangls`, cuyo paquete de mason (`erlang-ls`) se compila desde el fuente con
+`rebar3 escriptize`. En esta máquina no hay Erlang —ni `erl`, ni `rebar3`, ni
+`escript`—, así que mason fallaba con `bash: line 2: rebar3: command not found`
+cada vez que intentaba instalarlo. Con cero archivos `.erl` en el árbol, la
+respuesta correcta era quitar el extra, no instalar una toolchain de Erlang.
+
+Si alguna vez hace falta Erlang, hay dos caminos: reactivar el extra tras
+`pacman -S erlang rebar3`, o mejor usar `elp` (Erlang Language Platform, de
+WhatsApp), que mason distribuye como binario precompilado y no necesita
+toolchain.
 
 También se probó y se descartó **ltex-ls-plus** para revisar gramática y
 ortografía en español en Markdown y LaTeX. Funcionaba —detectaba concordancia y
