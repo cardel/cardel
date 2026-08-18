@@ -16,6 +16,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | `config/i3/` | i3 window manager (X11 fallback) |
 | `hypr/` | Hyprland compositor overrides |
 | `zed/` | Zed editor (settings, keymap, themes) |
+| `nvim/` | Neovim / LazyVim (config, plugins, `yamllint/config`) |
 | `yazi/` | Yazi file manager |
 | `pdfgithub/` | Markdown → PDF pipeline (pandoc + XeLaTeX + mermaid) |
 
@@ -38,6 +39,16 @@ Alacritty and tmux prefer `wl-clipboard` (Wayland) or `xclip` (X11) for the `y` 
 
 ### yazi image/PDF preview (`yazi/`)
 Requires `chafa` and `poppler` (`pdftoppm`). Alacritty implements no graphics protocol, and the adapter yazi picks on its own (`Wayland`) delegates to `ueberzugpp` — `Adapter::matches` decides from `XDG_SESSION_TYPE`/`WAYLAND_DISPLAY`/`DISPLAY`, not from which binaries exist, so it fails silently. `yazi.toml` sidesteps this by piping `chafa` into the preview pane via the `piper` plugin instead of forcing yazi's own chafa adapter (which would require blinding yazi to the graphical session, and every child process — `xdg-open`, `wl-copy` — would inherit that).
+
+### Neovim / LazyVim (`nvim/`)
+`~/.config/nvim` is a symlink into this repo, so `lazy-lock.json` is a tracked file that changes on every `:Lazy update` — commit it, that lockfile is what makes another machine reproducible. Plugins (`~/.local/share/nvim/lazy`) and mason tools are *not* tracked; `install.sh` rebuilds both.
+
+Three things that are easy to get wrong:
+- LazyVim's language extras declare their DAP block with `optional = true`, so it stays inert until `dap.core` is enabled. Enabling `dap.core` retroactively activates debugging for Python and Java without touching those extras.
+- Neovim gives `.github/workflows/*.yml` the plain `yaml` filetype, not `yaml.github`. actionlint is therefore registered under `yaml` and restricted by path with nvim-lint's `condition`.
+- mason is declared with `cmd = "Mason"` only, so `:MasonInstall` does not exist in a headless run until the plugin is loaded explicitly.
+
+`yamllint/config` lives under `nvim/` because nvim-lint is what invokes yamllint; a project-level `.yamllint` still wins over it.
 
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.

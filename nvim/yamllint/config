@@ -1,0 +1,31 @@
+# Configuracion de usuario de yamllint (~/.config/yamllint/config)
+#
+# Vive dentro de nvim/ porque quien invoca yamllint aqui es nvim-lint; no es una
+# herramienta que se use suelta. La instala nvim/install.sh.
+#
+# Jerarquia de yamllint: un .yamllint (o .yamllint.yaml) en el proyecto gana
+# sobre este archivo. O sea que los repos que ya traen su propia configuracion
+# no se ven afectados; esto solo cambia el default para todo lo demas.
+#
+# Sin esto, con las reglas de fabrica, cada uno de los ~145 YAML de
+# ~/repositorios abria con al menos un aviso inutil.
+
+extends: default
+
+rules:
+  # "missing document start ---": la marca en TODO archivo que no empiece con
+  # ---, que es practicamente todos. El separador de documentos solo hace falta
+  # cuando hay varios documentos en un mismo archivo.
+  document-start: disable
+
+  # En un workflow de GitHub, la clave `on:` es obligatoria y yamllint la
+  # reportaba como "truthy value should be one of [false, true]" -- un falso
+  # positivo garantizado en los ~107 workflows del arbol. check-keys: false deja
+  # de mirar las claves y sigue revisando los valores.
+  truthy:
+    check-keys: false
+
+  # 80 columnas es demasiado estricto para YAML con URLs o comandos largos.
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
