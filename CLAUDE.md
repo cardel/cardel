@@ -22,6 +22,13 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 
 `yazi/` is tracked in the repo.
 
+## Claude's own configuration is not here
+
+The global instructions — the ones that apply in every session and every
+repository — live in the private workspace repo, `cardel/claude-work`, under
+`claude/`, and `~/.claude/CLAUDE.md` is a symlink to that file. They are kept
+out of this repository on purpose: this one is the public profile repo.
+
 ## graft does not apply here
 
 The global instruction is "graft first, always". **This repo is the exception**, and
