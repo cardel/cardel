@@ -52,6 +52,40 @@ return {
       }
     end,
   },
+
+  -- chktex: el linter de LaTeX
+  --
+  -- Medido: al abrir un .tex, texlab engancha pero el buffer se queda con CERO
+  -- diagnosticos. No es que falte la herramienta -- chktex viene con TeX Live y
+  -- ya esta en /usr/bin -- sino que texlab la trae desactivada de fabrica y el
+  -- extra lang.tex de LazyVim solo le configura `keys`, nunca `settings`.
+  --
+  -- Con 544 archivos .tex, eso es el filetype con mas peso de la maquina sin
+  -- ninguna revision. chktex avisa de lo que LaTeX se traga sin protestar y
+  -- luego sale mal impreso: comillas rectas en vez de ``comillas'', espacio
+  -- despues de un punto que no acaba frase, $...$ en vez de \\(...\\), una ~
+  -- que falta antes de una referencia.
+  --
+  -- onOpenAndSave y no onEdit a proposito: chktex lanza un proceso por pasada y
+  -- en un documento largo hacerlo con cada tecla se nota. Al abrir y al guardar
+  -- da el mismo resultado sin coste perceptible.
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        texlab = {
+          settings = {
+            texlab = {
+              chktex = {
+                onOpenAndSave = true,
+                onEdit = false,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 }
 
 -- Nota sobre el motor: latexmk usa pdflatex por defecto y eso vale para 541 de

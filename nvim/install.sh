@@ -39,6 +39,23 @@ else
   echo "enlazado $YAMLLINT_DST/config -> $SRC_DIR/yamllint/config"
 fi
 
+# clangd tampoco lee nada desde nvim: se configura solo, leyendo .clangd del
+# proyecto y si no ~/.config/clangd/config.yaml (--enable-config, por defecto
+# activo). Vale para cualquier editor, no solo Neovim.
+#
+# Sin este archivo, clangd marca "Included header stdio.h is not used directly"
+# y ofrece borrar el include en archivos que SI usan printf. El include-cleaner
+# necesita los flags reales de compilacion para acertar, y sin
+# compile_commands.json los adivina.
+CLANGD_DST="${XDG_CONFIG_HOME:-$HOME/.config}/clangd"
+mkdir -p -- "$CLANGD_DST"
+if [[ -e "$CLANGD_DST/config.yaml" && ! -L "$CLANGD_DST/config.yaml" ]]; then
+  echo "aviso: ya existe $CLANGD_DST/config.yaml y no es un enlace; se deja como esta" >&2
+else
+  ln -sfn -- "$SRC_DIR/clangd/config.yaml" "$CLANGD_DST/config.yaml"
+  echo "enlazado $CLANGD_DST/config.yaml -> $SRC_DIR/clangd/config.yaml"
+fi
+
 # El estado (plugins descargados, herramientas de mason) NO se versiona: vive en
 # ~/.local/share/nvim y se reconstruye desde lazy-lock.json y las declaraciones
 # de mason.ensure_installed. Por eso hace falta una pasada de sincronizacion.

@@ -1,0 +1,30 @@
+# Configuracion global de clangd  ->  ~/.config/clangd/config.yaml
+#
+# clangd lee este archivo por su cuenta (--enable-config, activo por defecto).
+# No es cosa de Neovim: vale para cualquier editor que hable con clangd.
+#
+# El problema que resuelve: en un archivo con
+#
+#     #include <stdio.h>
+#     ...
+#     printf("%d\n", x);
+#
+# clangd marcaba "Included header stdio.h is not used directly (fix available)"
+# y ofrecia borrar el include. En un archivo que usa printf.
+#
+# El include-cleaner necesita saber los flags reales de compilacion para decidir
+# que header aporta que simbolo, y sin compile_commands.json los adivina. En
+# ~/repositorios hay 1147 archivos de C/C++ y ninguna base de compilacion, asi
+# que se equivoca casi siempre. El consejo que da -- borra ese header -- rompe
+# el codigo del estudiante, que es el peor tipo de falso positivo.
+#
+# MissingIncludes va en el mismo saco: sin los flags correctos, propone incluir
+# headers que ya estan disponibles de forma transitiva.
+#
+# Esto NO apaga nada mas: los errores de compilacion de verdad (tipos que no
+# cuadran, funciones sin declarar, punto y coma que falta) y los avisos de
+# clang-tidy siguen igual. Comprobado sobre un archivo con tres errores: se
+# siguen reportando los tres.
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
