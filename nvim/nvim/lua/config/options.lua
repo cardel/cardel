@@ -1,3 +1,22 @@
 -- Options are automatically loaded before lazy.nvim startup
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
+
+-- Copilot fuera del menu de completado.
+--
+-- vim.g.ai_cmp es el interruptor con el que LazyVim decide donde vive la IA
+-- (lazyvim/config/options.lua:26, por defecto true). Con true, las sugerencias
+-- de Copilot se mezclan como una entrada mas dentro de la misma lista donde
+-- salen los metodos del LSP, y ademas encienden el ghost text del completador.
+-- Resultado: no se distingue lo que el servidor sabe que existe de lo que la IA
+-- se esta inventando.
+--
+-- Con false, el menu queda solo con LSP / path / snippets / buffer, y Copilot
+-- pasa a su propio canal (suggestion), que en plugins/completion.lua se deja
+-- ademas bajo demanda en vez de automatico.
+--
+-- Tiene que estar aqui y no en un plugin: LazyVim carga este archivo antes de
+-- evaluar los modulos de plugins ("load options here, before lazy init while
+-- sourcing plugin modules", lazyvim/config/init.lua:329), y los extras leen
+-- ai_cmp en ese momento. Puesto mas tarde no tendria efecto.
+vim.g.ai_cmp = false
