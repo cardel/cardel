@@ -54,6 +54,11 @@ return {
 
   -- Herramientas en disco. mason no las instala por si solo: las declara quien
   -- las usa, y ningun extra habilitado declara estas dos.
+  --
+  -- shellcheck NO hace falta ponerlo aqui: el extra util.dot ya lo trae en su
+  -- ensure_installed. Ojo al comprobarlo desde una terminal normal -- `command -v
+  -- shellcheck` no lo encuentra porque vive en ~/.local/share/nvim/mason/bin,
+  -- que solo esta en el PATH que mason inyecta dentro de Neovim.
   {
     "mason-org/mason.nvim",
     opts = { ensure_installed = { "yamllint", "actionlint" } },
