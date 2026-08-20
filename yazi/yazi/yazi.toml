@@ -45,12 +45,34 @@
 mime = "image/*"
 run = 'piper -- chafa -f symbols --polite on --relative off --font-ratio 600/1320 --view-size "${w}x${h}" "$1"'
 
-# pdftoppm (poppler) rasteriza solo la primera página y la manda a chafa por
-# stdin (`-`). 150 dpi es suficiente para el tamaño de un panel de terminal.
+# Los PDF se previsualizan como TEXTO, no como imagen.
 #
-# El color no hace falta forzarlo: aunque piper mete la salida por una tubería y
-# chafa no puede interrogar al terminal, comprobado que emite truecolor
-# (38;2;R;G;B) igual, así que --colors full no cambia nada.
+# La versión anterior rasterizaba la primera página con pdftoppm y la pasaba por
+# chafa, y no se veía nada. No es un fallo de configuración, es aritmética: una
+# página carta a 150 dpi son 1275x1650 px y el panel son unas 60x39 celdas, o
+# sea un reescalado de 20x. A esa escala un párrafo es una mancha gris. Corregir
+# la relación de aspecto (--font-ratio, ver arriba) arregla la deformación, pero
+# no hace legible lo que no cabe.
+#
+# Y no hay salida por arriba: Alacritty 0.17 sigue sin implementar ningún
+# protocolo gráfico -- comprobado, no hay ni una cadena de sixel o kitty en el
+# binario, ni en el man, ni en el changelog -- así que la previsualización solo
+# puede ser texto o arte ASCII.
+#
+# pdftotext sí es legible: da el título, los autores y el resumen, que es
+# justamente lo que sirve para reconocer un archivo en una lista. Medido sobre
+# un paper: 567 líneas útiles y ni un carácter de control.
+#
+#   -layout    conserva la disposición (títulos centrados, columnas), que ayuda
+#              a distinguir de un vistazo una portada de una página de contenido
+#   -nopgbrk   quita los saltos de página, que si no salen como ^L
+#   -f 1 -l 10 diez páginas: yazi deja desplazar la previsualización, así que
+#              vale la pena tener más de una
+#   fold -s    pliega por espacios al ancho del panel en vez de recortar; sin
+#              esto se pierden ~10 columnas de cada línea, porque pdftotext saca
+#              hasta 70 y el panel ronda las 60
+#
+# Para ver el PDF de verdad, `o` lo abre en el visor del sistema.
 [[plugin.prepend_previewers]]
 mime = "application/pdf"
-run = 'piper -- pdftoppm -png -r 150 -f 1 -l 1 "$1" | chafa -f symbols --polite on --relative off --font-ratio 600/1320 --view-size "${w}x${h}" -'
+run = 'piper -- pdftotext -f 1 -l 10 -layout -nopgbrk "$1" - | fold -s -w "${w}"'

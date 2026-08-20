@@ -94,14 +94,25 @@ Alacritty and tmux prefer `wl-clipboard` (Wayland) or `xclip` (X11) for the `y` 
 
 ### yazi image/PDF preview (`yazi/`)
 
-chafa must be told the terminal's **cell shape** or every preview comes out
-stretched. It assumes 1:2; JetBrainsMono Nerd Font Mono is 600/1320 = 0.4545
-(advance 600, line height = ascent 1020 + descent 300 + lineGap 0). Measured on
-a Letter page (true aspect 0.7727), the default painted it at 0.6992 — 9.5%
-too narrow, i.e. stretched vertically. `--font-ratio 600/1320` brings it to
-0.7575. **Recompute this if the terminal font ever changes.** Colour needs no
-flag: chafa still emits truecolor through piper's pipe even though it cannot
-interrogate the terminal.
+**PDFs preview as text, not as an image**, via `pdftotext`. Rendering the page
+and passing it through chafa produced something unreadable, and that is
+arithmetic rather than a misconfiguration: a Letter page at 150 dpi is
+1275×1650 px and the pane is roughly 60×39 cells — a 20× downscale, at which a
+paragraph is a grey smear. There is no way around it either, because **Alacritty
+0.17 still implements no graphics protocol** (verified: no sixel or kitty string
+in the binary, the man page or the changelog). `pdftotext -layout` gives the
+title, authors and abstract, which is what actually identifies a file in a list;
+`fold -s -w "${w}"` wraps instead of truncating, since pdftotext emits up to 70
+columns.
+
+For real images, chafa must be told the terminal's **cell shape** or previews
+come out stretched. It assumes 1:2; JetBrainsMono Nerd Font Mono is
+600/1320 = 0.4545 (advance 600, line height = ascent 1020 + descent 300 +
+lineGap 0). Measured on a Letter page (true aspect 0.7727), the default painted
+it at 0.6992 — 9.5% too narrow, i.e. stretched vertically. `--font-ratio
+600/1320` brings it to 0.7575. **Recompute this if the terminal font ever
+changes.** Colour needs no flag: chafa still emits truecolor through piper's
+pipe even though it cannot interrogate the terminal.
 
 Requires `chafa` and `poppler` (`pdftoppm`). Alacritty implements no graphics protocol, and the adapter yazi picks on its own (`Wayland`) delegates to `ueberzugpp` — `Adapter::matches` decides from `XDG_SESSION_TYPE`/`WAYLAND_DISPLAY`/`DISPLAY`, not from which binaries exist, so it fails silently. `yazi.toml` sidesteps this by piping `chafa` into the preview pane via the `piper` plugin instead of forcing yazi's own chafa adapter (which would require blinding yazi to the graphical session, and every child process — `xdg-open`, `wl-copy` — would inherit that).
 
