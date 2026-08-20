@@ -77,23 +77,43 @@ return {
     },
   },
 
-  -- Copilot bajo demanda
+  -- Copilot: participa, pero se acepta a trozos
   --
-  -- Con vim.g.ai_cmp = false (config/options.lua) el extra ai.copilot deja de
-  -- meter entradas en el menu y activa su propio canal:
-  -- `suggestion.enabled = not vim.g.ai_cmp`. Pero lo deja con
-  -- auto_trigger = true, o sea proponiendo lineas enteras en gris segun se
-  -- escribe -- se cambia una forma de texto adelantado por otra.
+  -- Con vim.g.ai_cmp = false (config/options.lua) Copilot no entra en el menu
+  -- -- eso se queda asi, para que la lista siga siendo solo lo que el servidor
+  -- de lenguaje sabe que existe -- y usa su propio canal, el ghost text.
   --
-  -- Con auto_trigger = false no aparece nada hasta pedirlo:
-  --   <M-]>  pedir sugerencia / siguiente
-  --   <M-[>  anterior
-  --   <Tab>  aceptar la visible (via LazyVim.cmp.actions.ai_accept)
+  -- El problema del ghost text no es que aparezca, es que Copilot propone
+  -- bloques enteros cuando muchas veces solo acierta la primera palabra o la
+  -- primera linea. Aceptar todo obliga despues a borrar lo que sobra.
+  --
+  -- La solucion no es acortar la sugerencia (copilot.lua no expone ningun
+  -- limite de longitud: el servidor manda lo que manda), sino no tener que
+  -- tragarsela entera. copilot.lua tiene accept_word y accept_line ademas de
+  -- accept, y sin mapear no se pueden usar. Asi una sugerencia de diez lineas
+  -- no cuesta nada: se toma lo que sirve y se sigue escribiendo.
+  --
+  --   <M-Right>  aceptar UNA palabra
+  --   <M-CR>     aceptar UNA linea
+  --   <Tab>      aceptar entera (via LazyVim.cmp.actions.ai_accept)
+  --   <M-]> / <M-[>  siguiente / anterior sugerencia
+  --
+  -- auto_trigger vuelve a true para que proponga solo mientras se escribe. La
+  -- diferencia con el estado de fabrica es que ahora aceptar es granular.
   {
     "zbirenbaum/copilot.lua",
     optional = true,
     opts = {
-      suggestion = { auto_trigger = false },
+      suggestion = {
+        auto_trigger = true,
+        keymap = {
+          -- `accept` se queda en false, que es como lo deja el extra: lo maneja
+          -- <Tab> a traves de LazyVim.cmp.actions.ai_accept. Estas dos son
+          -- claves nuevas, no reemplazan nada.
+          accept_word = "<M-Right>",
+          accept_line = "<M-CR>",
+        },
+      },
     },
   },
 }
