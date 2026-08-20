@@ -125,3 +125,20 @@ source $ZSH/oh-my-zsh.sh
 
 # yazi: el keybind <C-;> ("Open terminal here") lanza $TERMINAL
 export TERMINAL=alacritty
+
+# clangd: base de compilacion para C/C++.
+#
+# Sin compile_commands.json, clangd adivina los flags de cada archivo: no
+# resuelve los #include propios del proyecto, no navega entre archivos y marca
+# errores en codigo que compila bien. En ~/repositorios hay 1147 archivos de
+# C/C++ repartidos en 45 proyectos de CMake y 85 Makefiles, y ni un solo
+# compile_commands.json.
+#
+# Con esta variable, cualquier `cmake` que se configure a partir de ahora emite
+# el archivo solo, sin tocar ningun CMakeLists.txt. clangd lo encuentra en
+# build/ por su cuenta.
+#
+# Para los proyectos de Makefile no sirve: alli hace falta `bear -- make`.
+# Para un ejercicio de un solo archivo basta un compile_flags.txt al lado con
+# una bandera por linea, por ejemplo:  -std=c++17
+export CMAKE_EXPORT_COMPILE_COMMANDS=ON
