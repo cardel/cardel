@@ -153,6 +153,18 @@ Language-server traps found by measurement, each one silent:
   build target after the Gradle subproject (`app` here), never `root`.
 - **texlab ships chktex disabled** and the `lang.tex` extra only sets `keys`,
   so 544 `.tex` files had zero diagnostics while `chktex` sat in `/usr/bin`.
+- **Copilot's channel is chosen by `vim.g.ai_cmp`** (LazyVim default `true`),
+  and it must be set in `lua/config/options.lua` — LazyVim loads that file
+  *before* sourcing plugin modules (`lazyvim/config/init.lua:329`), which is
+  when the extras read it. `true` mixes Copilot into the same list as the LSP
+  methods and turns on ghost text; `false` moves it to its own inline channel.
+  Either way the suggestion length cannot be capped — copilot.lua exposes no
+  such option — so the answer is `accept_word` / `accept_line`, which exist but
+  are unmapped by the extra. Do **not** bind `accept_line` to `<M-CR>`:
+  copilot.lua validates suggestion, nes and panel keymaps in one pass
+  (`keymaps/init.lua:170`) and the panel's default `open` is `<M-CR>`, so it
+  errors `Duplicate keymap detected` on every start — `panel = { enabled =
+  false }` does not spare you, since `validate()` never checks `enabled`.
 - **nvim-cmp does not open on a bare LSP trigger character.** With jdtls
   attached, `import java.util.` yields nothing — verified at 2, 5, 10, 15 and
   25 seconds — while `<C-Space>` returns 50 entries instantly and typing one
@@ -162,6 +174,39 @@ Language-server traps found by measurement, each one silent:
   snippets only. **Unsolved**; blink.cmp handles trigger characters natively
   and the spec for it is already in `completion.lua` behind `optional = true`.
 
+
+### Verifying a Neovim change — the methods that actually work
+
+Every wrong conclusion in this repo's history came from a bad measurement, not
+from bad reasoning. These are the traps, each one found the hard way:
+
+- **`nvim --headless` cannot test anything LSP-related.** LazyVim loads on
+  `VeryLazy`, which fires after `UIEnter`, so no server ever attaches and every
+  buffer looks clean. Wrap it in a pty:
+  `script -qec "nvim file.java -c '...'" /dev/null`.
+- **To drive keystrokes, use a socket, and always check what landed.**
+  `nvim --listen /tmp/s` in the background, then `nvim --server /tmp/s
+  --remote-send` / `--remote-expr` from outside. `nvim_input` through this path
+  is intermittent — it silently mangled a buffer into `tttttttttass App {` in
+  one run and did nothing at all in another. Assert on `getline(1)` and
+  `mode()` before believing any result.
+- **Read merged options with `LazyVim.opts("<plugin>")`.** Not
+  `require("lazy.core.plugin").values(p, "opts", true)` — that third argument
+  means *is_list*, and passing it returns something that looks plausible and is
+  wrong (it reported `servers.clangd = nil` for a fully configured clangd).
+- **nvim-cmp registers `nvim_lsp` on `InsertEnter`, per client.** Inspecting
+  `cmp.core.sources` from normal mode shows the source missing, which reads
+  exactly like a bug. It is not; `cmp_nvim_lsp.setup()` only installs the
+  autocmd.
+- **mason's binaries are not on the shell `PATH`.** `command -v shellcheck`
+  returns nothing while nvim-lint runs it happily from
+  `~/.local/share/nvim/mason/bin`. Check that directory, not the shell.
+- **When measuring terminal art, do not filter blank lines.** A mostly-white
+  page emits rows of spaces that strip to empty; dropping them turned a correct
+  39-row measurement into 15 and inverted the conclusion.
+
+The general rule: when a probe says something is broken, first prove the probe
+can see something that is known to work.
 
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
