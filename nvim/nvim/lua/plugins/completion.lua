@@ -94,7 +94,7 @@ return {
   -- no cuesta nada: se toma lo que sirve y se sigue escribiendo.
   --
   --   <M-Right>  aceptar UNA palabra
-  --   <M-CR>     aceptar UNA linea
+  --   <M-Down>   aceptar UNA linea
   --   <Tab>      aceptar entera (via LazyVim.cmp.actions.ai_accept)
   --   <M-]> / <M-[>  siguiente / anterior sugerencia
   --
@@ -110,8 +110,20 @@ return {
           -- `accept` se queda en false, que es como lo deja el extra: lo maneja
           -- <Tab> a traves de LazyVim.cmp.actions.ai_accept. Estas dos son
           -- claves nuevas, no reemplazan nada.
+          --
+          -- accept_line NO puede ser <M-CR>: copilot.lua valida de una vez los
+          -- keymaps de suggestion, nes y panel (keymaps/init.lua:170), y el
+          -- panel trae open = "<M-CR>" por defecto. Salta
+          --
+          --     Duplicate keymap detected: 0:i:<M-CR> (2 times)
+          --
+          -- en cada arranque. Que LazyVim tenga el panel con enabled = false no
+          -- ayuda: validate() lee config.panel.keymap sin mirar si esta activo.
+          --
+          -- <M-Right> y <M-Down> ademas van juntas: una palabra a la derecha,
+          -- una linea hacia abajo.
           accept_word = "<M-Right>",
-          accept_line = "<M-CR>",
+          accept_line = "<M-Down>",
         },
       },
     },
