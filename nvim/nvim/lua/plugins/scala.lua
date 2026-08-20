@@ -74,7 +74,15 @@ return {
         name = "Attach (gradle --debug-jvm)",
         hostName = "127.0.0.1",
         port = 5005,
-        buildTarget = "root",
+        -- El nombre del build target lo pone Bloop a partir del subproyecto de
+        -- Gradle, NO es "root". Los 11 proyectos de Gradle de aqui salen todos
+        -- del mismo `gradle init` y su settings.gradle dice include('app'), asi
+        -- que el target es "app" (y "app-test" para los tests).
+        --
+        -- Con un target inexistente metals no resuelve el classpath y el attach
+        -- falla sin decir por que. Si algun proyecto usa otro nombre de modulo,
+        -- se ve con <leader>me -> "Metals: Show build targets".
+        buildTarget = "app",
       })
     end,
   },
