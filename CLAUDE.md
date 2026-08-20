@@ -22,6 +22,28 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 
 `yazi/` is tracked in the repo.
 
+## Installed configs may be copies, not symlinks — check first
+
+`./install.sh` with no arguments prints, for every tool, whether its live path is
+a **symlink**, a **copy**, or **absent**. Run it before reasoning about any config
+in this repo.
+
+This matters because the two machines are not wired the same way. On the desktop
+`~/.config/nvim` is a symlink; on the laptop (`carlos-portatil`) several configs
+were plain copies that had silently drifted for months. Reading a file here and
+assuming it is what runs is how you end up debugging the wrong text — it happened
+four times in one session: `hypr/overrides.conf` (live copy was 130 lines behind),
+`nvim/` (four plugin files missing), `.zshrc` and `xdg/mimeapps.list` (both
+diverged in *both* directions).
+
+Still copies today, each because merging needs a decision rather than a link:
+
+| Config | Why it is not linked yet |
+|---|---|
+| `hypr/` | the active monitor block in `overrides.conf` is the desktop's (`DP-3`), and the laptop's live file sources `touchpad.conf`, which the repo version dropped |
+| `.zshrc` | other installers append to it (Google Cloud SDK, filen-cli); the plugin lists differ and only the repo side has `export TERMINAL=alacritty` |
+| `xdg/` | live has `drracket`/`mpv`/`evisions-launch`, repo has `inode/directory=yazi.desktop` and others |
+
 ## Claude's own configuration is not here
 
 The global instructions — the ones that apply in every session and every
@@ -71,6 +93,16 @@ Missing fonts cause silent rendering failures (wrong glyphs, broken box-drawing)
 Alacritty and tmux prefer `wl-clipboard` (Wayland) or `xclip` (X11) for the `y` copy-mode keybind. OSC 52 clipboard works without them.
 
 ### yazi image/PDF preview (`yazi/`)
+
+chafa must be told the terminal's **cell shape** or every preview comes out
+stretched. It assumes 1:2; JetBrainsMono Nerd Font Mono is 600/1320 = 0.4545
+(advance 600, line height = ascent 1020 + descent 300 + lineGap 0). Measured on
+a Letter page (true aspect 0.7727), the default painted it at 0.6992 — 9.5%
+too narrow, i.e. stretched vertically. `--font-ratio 600/1320` brings it to
+0.7575. **Recompute this if the terminal font ever changes.** Colour needs no
+flag: chafa still emits truecolor through piper's pipe even though it cannot
+interrogate the terminal.
+
 Requires `chafa` and `poppler` (`pdftoppm`). Alacritty implements no graphics protocol, and the adapter yazi picks on its own (`Wayland`) delegates to `ueberzugpp` — `Adapter::matches` decides from `XDG_SESSION_TYPE`/`WAYLAND_DISPLAY`/`DISPLAY`, not from which binaries exist, so it fails silently. `yazi.toml` sidesteps this by piping `chafa` into the preview pane via the `piper` plugin instead of forcing yazi's own chafa adapter (which would require blinding yazi to the graphical session, and every child process — `xdg-open`, `wl-copy` — would inherit that).
 
 ### Neovim / LazyVim (`nvim/`)
@@ -85,6 +117,41 @@ Five things that are easy to get wrong:
 
 `yamllint/config` lives under `nvim/` because nvim-lint is what invokes yamllint; a project-level `.yamllint` still wins over it.
 
+Language-server traps found by measurement, each one silent:
+
+- **jdtls needs Java 21+ to *run*.** mason's launcher (`bin/jdtls.py`,
+  `get_java_executable`) reads `JAVA_HOME` then `java` on PATH and aborts with
+  `requires at least Java 21`. The system default here is 17, so it died every
+  time. `java.lua` passes `--java-executable` instead of touching anything
+  global — changing the default with `archlinux-java` or exporting `JAVA_HOME`
+  would also change what Gradle, Maven and students' terminal builds use. Note
+  this is a *different* setting from `configuration.runtimes`, which picks the
+  JDK projects are **analysed against**. `java-8-openjdk` is excluded from that
+  list: it ships no `javac` here, and jdtls drops a JDK-less runtime silently.
+- **Parameter-name inlay hints are on by default** and read as syntax that is
+  not in the file — `printf(format: "%d", x)`, `calcular(base: x, tasa: y)`.
+  Turned off per-server (clangd flags, jdtls `parameterNames = "none"`) rather
+  than via `inlay_hints.exclude`, because that list is *replaced* on merge, so
+  two files in `lua/plugins/` setting it would race and the last one
+  alphabetically would win.
+- **Metals is not in mason** — 590 packages, none for metals/scala/bloop. So it
+  cannot go in `ensure_installed`; `scala.lua` triggers nvim-metals' own
+  coursier download on the first Scala buffer. Gradle works out of the box:
+  nvim-metals' default `root_patterns` include `settings.gradle` but *not*
+  `build.gradle`, so the project root wins over the module. Bloop names the
+  build target after the Gradle subproject (`app` here), never `root`.
+- **texlab ships chktex disabled** and the `lang.tex` extra only sets `keys`,
+  so 544 `.tex` files had zero diagnostics while `chktex` sat in `/usr/bin`.
+- **nvim-cmp does not open on a bare LSP trigger character.** With jdtls
+  attached, `import java.util.` yields nothing — verified at 2, 5, 10, 15 and
+  25 seconds — while `<C-Space>` returns 50 entries instantly and typing one
+  more letter (`.c`) opens it normally. Forcing `cmp.complete()` from a
+  `TextChangedI` autocmd fixes the dot but breaks the next keystroke: the
+  entries get filtered locally instead of re-queried, so `.c` drops to
+  snippets only. **Unsolved**; blink.cmp handles trigger characters natively
+  and the spec for it is already in `completion.lua` behind `optional = true`.
+
+
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
 
@@ -94,7 +161,24 @@ Scripts use `set -euo pipefail`. Keep that pattern when adding new scripts.
 
 ## Adding new tool configs
 
-There is no enforced install convention — some tools have an `install.sh` (symlink-based), others are placed manually. When adding a new tool, create a subdirectory named after the tool and add the config files there. An `install.sh` is optional.
+Every tool lives in a subdirectory named after it and carries its own
+`install.sh` that symlinks into place, backing up any existing real file first.
+The root `install.sh` is only a front-end: it lists status, runs one by name, or
+runs everything with `--all`.
+
+When adding a tool, register it in the root script's three tables —
+`INSTALADORES`, `DESTINOS`, and `MANUALES` if linking it would clobber something
+another installer writes to (that is why `zsh` is excluded from `--all`).
+
+Some tools configure themselves and never read anything through Neovim, so their
+files are linked by `nvim/install.sh` into the path *they* look at:
+`yamllint/config` → `~/.config/yamllint/config`, and `clangd/config.yaml` →
+`~/.config/clangd/config.yaml`. The clangd one disables `UnusedIncludes` and
+`MissingIncludes`, which without a `compile_commands.json` told students to
+delete the `#include <stdio.h>` their `printf` needs. There are 1147 C/C++ files
+across 45 CMake projects and 85 Makefiles here and **no compilation database at
+all**; `CMAKE_EXPORT_COMPILE_COMMANDS=ON` in `.zshrc` covers the CMake half,
+Makefiles need `bear -- make`.
 
 ## Language / locale
 

@@ -20,13 +20,37 @@
 #   --relative off terminar cada fila con salto de línea en vez de mover el
 #                  cursor, que es lo que piper lee línea a línea.
 #   --view-size    piper expone el tamaño del panel como $w y $h.
+#   --font-ratio   ver abajo. Sin esto las imágenes salen estiradas a lo alto.
+#
+# Sobre --font-ratio: chafa tiene que saber la forma de una celda del terminal
+# para no deformar la imagen, y asume 1:2 por defecto. La celda real aquí no es
+# esa. JetBrainsMono Nerd Font Mono declara, en unidades de 1000 por em:
+#
+#     avance horizontal  600
+#     alto de línea      1320   (ascent 1020 + descent 300 + lineGap 0)
+#
+# o sea una relación de 600/1320 = 0.4545, no 0.5. Un 9% de diferencia, y se
+# nota: medido sobre una página carta (aspecto real 0.7727), chafa la pintaba
+# con un aspecto físico de 0.6992 -- un 9.5% estrecha, es decir estirada a lo
+# alto. Pasándole la relación real baja a 0.7575, un 2%, que ya no se aprecia.
+#
+# El valor va como fracción y no como decimal porque es exactamente lo que
+# declara la fuente. Si algún día se cambia la tipografía del terminal hay que
+# recalcularlo:
+#
+#     python -c "from fontTools.ttLib import TTFont as T; f=T('RUTA.ttf'); \
+#       h=f['hhea']; print(f['hmtx']['A'][0], h.ascent-h.descent+h.lineGap)"
 
 [[plugin.prepend_previewers]]
 mime = "image/*"
-run = 'piper -- chafa -f symbols --polite on --relative off --view-size "${w}x${h}" "$1"'
+run = 'piper -- chafa -f symbols --polite on --relative off --font-ratio 600/1320 --view-size "${w}x${h}" "$1"'
 
 # pdftoppm (poppler) rasteriza solo la primera página y la manda a chafa por
 # stdin (`-`). 150 dpi es suficiente para el tamaño de un panel de terminal.
+#
+# El color no hace falta forzarlo: aunque piper mete la salida por una tubería y
+# chafa no puede interrogar al terminal, comprobado que emite truecolor
+# (38;2;R;G;B) igual, así que --colors full no cambia nada.
 [[plugin.prepend_previewers]]
 mime = "application/pdf"
-run = 'piper -- pdftoppm -png -r 150 -f 1 -l 1 "$1" | chafa -f symbols --polite on --relative off --view-size "${w}x${h}" -'
+run = 'piper -- pdftoppm -png -r 150 -f 1 -l 1 "$1" | chafa -f symbols --polite on --relative off --font-ratio 600/1320 --view-size "${w}x${h}" -'

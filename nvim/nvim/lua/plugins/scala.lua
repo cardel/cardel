@@ -24,7 +24,37 @@ return {
     --    reemplaza. Es la misma funcion del extra con el patron limitado a
     --    Scala; metals se carga igual al abrir un .java, pero ya no se engancha.
     config = function(_, metals_config)
+      -- Bajar el servidor solo la primera vez.
+      --
+      -- Metals NO esta en mason: comprobado sobre el registro instalado, 590
+      -- paquetes y ninguno de metals, scala ni bloop. Asi que no se puede
+      -- declarar en ensure_installed como el resto de servidores, y en una
+      -- maquina nueva Scala se queda sin LSP hasta que alguien se acuerda de
+      -- ejecutar :MetalsInstall a mano -- que es justo lo que paso en el
+      -- portatil, donde en ~/.cache/nvim/nvim-metals/ solo habia un log.
+      --
+      -- Quien si sabe instalarlo es el propio nvim-metals, con coursier. Esto
+      -- lo dispara al abrir el primer archivo de Scala si el binario no esta,
+      -- que es el equivalente a lo que hace mason con los demas.
+      --
+      -- once = true en el autocmd de instalacion: la descarga es asincrona y
+      -- tarda, asi que no debe relanzarse con cada buffer mientras corre.
+      local metals_bin = vim.fn.stdpath("cache") .. "/nvim-metals/metals"
+
       local group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "scala", "sbt" },
+        once = true,
+        group = group,
+        callback = function()
+          if vim.fn.executable(metals_bin) == 0 then
+            vim.notify("Metals no esta instalado; bajandolo con coursier...", vim.log.levels.INFO)
+            require("metals").install()
+          end
+        end,
+      })
+
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "scala", "sbt" },
         callback = function()
