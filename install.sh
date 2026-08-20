@@ -25,10 +25,11 @@ declare -A INSTALADORES=(
   [xdg]="xdg/install.sh"
   [hypr]="hypr/install.sh"
   [zsh]="config/oh-my-zsh/install.sh"
+  [obs]="obs/install.sh"
 )
 
-# Fuera de --all: requieren una decision antes de sobrescribir.
-MANUALES=(zsh)
+# Fuera de --all: requieren una decision antes de sobrescribir, o sudo.
+MANUALES=(zsh obs)
 
 # nombre -> ruta que deberia quedar enlazada, para el informe de estado
 CONF="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -40,6 +41,15 @@ declare -A DESTINOS=(
   [xdg]="$CONF/mimeapps.list"
   [hypr]="$CONF/hypr/user_configs/overrides.conf"
   [zsh]="$HOME/.zshrc"
+  [obs]="/etc/modprobe.d/v4l2loopback.conf"
+)
+
+# Herramientas que se instalan copiando en vez de enlazando. Para estas, "no es
+# un symlink" es lo correcto y no un aviso, asi que el estado se calcula
+# comparando el contenido: interesa saber si la copia de /etc quedo desfasada
+# respecto al repo. El porque de copiar esta en obs/README.md.
+declare -A FUENTES=(
+  [obs]="obs/etc/modprobe.d/v4l2loopback.conf"
 )
 
 es_manual() {
@@ -49,7 +59,14 @@ es_manual() {
 }
 
 estado() {
-  local dst="$1"
+  local n="$1" dst="${DESTINOS[$1]}"
+  if [[ -n "${FUENTES[$n]:-}" ]]; then
+    if [[ ! -e "$dst" ]]; then echo "ausente"
+    elif cmp -s "$ROOT/${FUENTES[$n]}" "$dst"; then echo "copiado"
+    else echo "COPIA DESFASADA"
+    fi
+    return
+  fi
   if [[ -L "$dst" ]]; then echo "enlazado"
   elif [[ -e "$dst" ]]; then echo "COPIA (no enlazado)"
   else echo "ausente"
@@ -62,7 +79,7 @@ listar() {
   for n in $(printf '%s\n' "${!INSTALADORES[@]}" | sort); do
     local marca=""
     es_manual "$n" && marca=" (fuera de --all)"
-    printf '  %-11s %-22s %s%s\n' "$n" "$(estado "${DESTINOS[$n]}")" "${DESTINOS[$n]}" "$marca"
+    printf '  %-11s %-22s %s%s\n' "$n" "$(estado "$n")" "${DESTINOS[$n]}" "$marca"
   done
   echo
   echo "Uso:  ./install.sh <nombre>...   |   ./install.sh --all"

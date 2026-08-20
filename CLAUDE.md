@@ -19,6 +19,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | `nvim/` | Neovim / LazyVim (config, plugins, `yamllint/config`) |
 | `yazi/` | Yazi file manager |
 | `pdfgithub/` | Markdown → PDF pipeline (pandoc + XeLaTeX + mermaid) |
+| `obs/` | OBS Studio — virtual camera (v4l2loopback) for sharing the webcam |
 
 `yazi/` is tracked in the repo.
 
@@ -207,6 +208,58 @@ from bad reasoning. These are the traps, each one found the hard way:
 
 The general rule: when a probe says something is broken, first prove the probe
 can see something that is known to work.
+
+### Sharing the webcam between OBS and Zoom web (`obs/`)
+
+The camera **can** be shared, and the first conclusion here was wrong. What is
+exclusive is the *device node*, not the camera:
+
+- **The microphone was never the problem.** PipeWire opens the ALSA device once
+  and mixes N clients, so OBS and Zoom capture it simultaneously with no setup.
+  Two concurrent `pw-record` processes on the same source both appear as
+  source-outputs on it and both write valid audio.
+- **`/dev/video0` is exclusive.** With one capture running, the second dies at
+  `VIDIOC_REQBUFS returned -1 (Device or resource busy)`. The webcam's second
+  node `/dev/video1` is no escape hatch — *Metadata Capture* only, no image.
+- **PipeWire multiplexes video too**, and already exposes the webcam as a
+  `Video/Source` node with nothing installed. Measured with two overlapping
+  `gst-launch-1.0 pipewiresrc` consumers on the same node: both `[active]` in
+  `wpctl status` at once, 300 and 120 frames, no errors.
+
+So there are two routes, and `obs/README.md` documents both. Route 1 (PipeWire:
+OBS's `Video Capture Device (PipeWire)` source + Chromium's
+`enable-webrtc-pipewire-camera` flag) needs no root and no module, and Zoom sees
+the raw camera. Route 2 (v4l2loopback) is what you want for teaching, because
+Zoom then sees the composed OBS scene; `exclusive_caps=1` is the option Chromium
+needs to list the loopback node, and that one is **still unverified** — the
+module is not installed on the laptop.
+
+**The measurement trap:** the first two-consumer test showed both processes
+getting all their frames and proved nothing — the first had already finished
+before the second started. Overlap has to be confirmed in the graph
+(`wpctl status`) *while* both run, which is the same rule as everywhere else in
+this file: prove the probe can see the thing before believing it.
+
+Route 1 is scripted in `obs/navegadores.sh` (both browsers, idempotent,
+`--off` reverses it), and the two browsers store it in completely different
+places: Chromium's flag goes in `Local State` — the same file `chrome://flags`
+writes — while Firefox's `media.webrtc.camera.allow-pipewire` must go in
+`user.js`, **not** `prefs.js`, because Firefox rewrites `prefs.js` on exit and
+would drop it. `user.js` is reread at every start and wins, at the cost of
+pinning the value beyond `about:config`'s reach. Both browsers must be closed
+when the script runs, for the same reason.
+
+`obs/comprobar.sh` reports the state of either route on any machine without
+changing anything; nothing in it hardcodes `/dev/videoN` or node ids, since both
+differ between the laptop and the desktop.
+
+`obs/install.sh` **copies to `/etc` instead of symlinking**, the only installer
+in the repo that does. A symlink from `/etc/modprobe.d` into a repo under `$HOME`
+would put kernel module parameters within reach of anything running as the user,
+and `/etc/modules-load.d` is read by systemd very early in boot. The root
+`install.sh` grew a `FUENTES` table for this: copy-installed tools report
+`copiado` / `COPIA DESFASADA` by comparing content, because for them "not a
+symlink" is correct rather than a warning.
 
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
