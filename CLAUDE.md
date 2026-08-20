@@ -261,6 +261,25 @@ and `/etc/modules-load.d` is read by systemd very early in boot. The root
 `copiado` / `COPIA DESFASADA` by comparing content, because for them "not a
 symlink" is correct rather than a warning.
 
+### ProtonVPN starts itself but must not connect itself (`hypr/`)
+
+Two separate things, and confusing them costs an afternoon. `exec-once` only
+*launches* the app; what connects is `connect_at_app_startup` in
+`~/.config/Proton/VPN/app-config.json` (GUI: Settings → General → Auto connect,
+where typing `OFF` writes `null`). It shipped as `"FASTEST"`, which is why the
+VPN came up seconds after login.
+
+The binary is `protonvpn-app`. There is no `proton-vpn` and no `protonvpn-cli` —
+`proton-vpn-gtk-app` ships no CLI — and Hyprland's `exec-once` fails silently on
+a missing command, so the laptop's live config had been launching nothing for
+months. `--start-minimized` is safe here because waybar's `modules-left`
+includes `tray`.
+
+The app reads that JSON once at startup and rewrites it only when a setting is
+changed in the GUI (`controller.py:372,384`), so editing the file under a
+running app sticks — unless you then touch some other setting in that same
+session, which flushes the stale in-memory `FASTEST` back to disk.
+
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
 
