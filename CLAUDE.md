@@ -312,6 +312,42 @@ changed in the GUI (`controller.py:372,384`), so editing the file under a
 running app sticks — unless you then touch some other setting in that same
 session, which flushes the stale in-memory `FASTEST` back to disk.
 
+### gromit-mpx draws on the whole X screen, and its own keys never arrive (`hypr/`)
+
+Two separate defects, both invisible until measured, both fixed from Hyprland's
+side because gromit offers no lever for either.
+
+- **Its hotkeys are grabbed on XWayland, not the compositor.** `--debug` prints
+  `Grabbing hot key 'F9' from keyboard '3'`, and an XWayland grab only receives
+  keys while an X window holds focus — which gromit's overlay never takes, by
+  design, so clicks reach what is underneath. The same log line shows the MPX in
+  the name does not survive either: `Now 1 enabled devices`, one virtual
+  pointer instead of separate ones. So the actions are bound in
+  `overrides.conf` and delivered over the CLI. A `flatpak run` with options
+  costs 130 ms measured — fine for a keybinding.
+- **There is no monitor option.** The binary accepts only `--active --clear
+  --debug --key --keycode --line --opacity --quit --redo --reload --toggle
+  --undo --undo-key --undo-keycode --version --visibility`. It paints the whole
+  X screen, which under XWayland is the bounding box of every output (3840×1080
+  here). Worse, where it lands depends on which monitor has focus at launch:
+  measured opening at `at=[1920,0]` once and `at=[0,0]` another, always
+  `size=[3840,1079]`. In the first case the canvas is offset by a full screen
+  from the coordinates gromit believes it has.
+
+Two traps in the fix itself:
+
+- **`monitor` is required; `move` alone is not enough.** For a floating window
+  Hyprland resolves `move` relative to whichever monitor it drops the window on.
+  Verified by forcing focus onto HDMI-A-1: without the line gromit appeared at
+  `at=[1920,0]`, with it at `at=[0,0]`.
+- **The flat window-rule syntax is gone in 0.56.2.** `windowrule = float,
+  class:^(Gromit-mpx)$` returns `invalid field float: missing a value`. Only the
+  block form parses, which is what the rest of `overrides.conf` already uses.
+
+Note the live file here is a **copy**, not a symlink (see the table above), so
+editing the repo changes nothing until it is copied to
+`~/.config/hypr/user_configs/overrides.conf` and `hyprctl reload` runs.
+
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
 
