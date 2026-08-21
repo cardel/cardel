@@ -8,6 +8,7 @@ text/csv=libreoffice-calc.desktop;geany.desktop;
 text/plain=geany.desktop;
 text/x-tex=geany.desktop;
 application/json=geany.desktop;
+video/mp4=vlc.desktop;
 
 [Default Applications]
 application/pdf=org.gnome.Evince.desktop;
