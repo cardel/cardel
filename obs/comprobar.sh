@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
-# comprobar.sh -- dice en que estado esta esta maquina para compartir la camara.
+# comprobar.sh -- dice en que estado esta esta maquina para compartir camara y
+# microfono entre OBS, los navegadores y Zoom.
 #
 #   ./comprobar.sh
 #
-# Pensado para lanzarlo tal cual en una maquina nueva (el PC de mesa) antes de
-# tocar nada: no cambia nada, solo mira. Los numeros de /dev/videoN y los ids de
-# los nodos de PipeWire cambian de una maquina a otra, asi que aqui no hay nada
-# fijado a mano.
+# No cambia nada, solo mira. Pensado para lanzarlo tal cual en una maquina nueva
+# antes de tocar nada. Los numeros de /dev/videoN y los ids de los nodos de
+# PipeWire cambian de una maquina a otra, asi que aqui no hay nada fijado.
 set -euo pipefail
+
+# pactl y wpctl traducen sus etiquetas segun el locale y aqui se buscan por
+# nombre en ingles.
+export LC_ALL=C
 
 ok()   { printf '  \033[32mOK\033[0m    %s\n' "$1"; }
 no()   { printf '  \033[31mNO\033[0m    %s\n' "$1"; }
+avi()  { printf '  \033[33m!!\033[0m    %s\n' "$1"; }
 info() { printf '        %s\n' "$1"; }
 
 echo "== Camaras fisicas =="
@@ -37,7 +42,7 @@ nodo="$(wpctl status 2>/dev/null | sed -n '/^Video/,/^Settings/p' \
         | tr -dc '0-9\n' | head -1)"
 if [[ -n "${nodo:-}" ]]; then
   ok "PipeWire expone la camara como Video/Source (nodo $nodo)"
-  info "eso es lo que permite que dos programas la lean a la vez"
+  info "eso es lo que permite que varios programas la lean a la vez"
 else
   no "PipeWire no expone ninguna camara; sin esto el camino 1 no existe"
 fi
@@ -57,18 +62,37 @@ else
   no "el portal de camara no responde; el navegador no podra pedirla por ahi"
 fi
 
-estado_flag="no activado"
-ls_chromium="$HOME/.config/chromium/Local State"
-if [[ -f "$ls_chromium" ]] && grep -q 'enable-webrtc-pipewire-camera@1' "$ls_chromium" 2>/dev/null; then
-  estado_flag="activado"
-fi
-if [[ "$estado_flag" == "activado" ]]; then
-  ok "Chromium: flag enable-webrtc-pipewire-camera activado"
-elif [[ -f "$ls_chromium" ]]; then
-  no "Chromium: falta el flag enable-webrtc-pipewire-camera  ->  ./navegadores.sh"
-else
-  info "Chromium: sin perfil en esta maquina, nada que hacer"
-fi
+echo
+echo "== Navegadores =="
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}"
+# Mismo orden y mismos campos que NAVEGADORES en navegadores.sh:
+#   etiqueta | directorio bajo ~/.config | proceso | binario
+for entrada in \
+  "Chromium|chromium|chromium|/usr/lib/chromium/chromium" \
+  "Vivaldi|vivaldi|vivaldi-bin|/opt/vivaldi/vivaldi-bin" \
+  "Chrome|google-chrome|chrome|/opt/google/chrome/chrome" \
+  "Brave|BraveSoftware/Brave-Browser|brave|/usr/lib/brave-bin/brave"
+do
+  IFS='|' read -r etiqueta dir proc bin <<<"$entrada"
+  ls_file="$CONF/$dir/Local State"
+  if [[ ! -f "$ls_file" ]]; then
+    # Instalado sin estrenar y no instalado son cosas distintas: en el primer
+    # caso solo falta abrirlo una vez para que se cree el perfil.
+    if [[ -f "$bin" ]]; then
+      info "$etiqueta: instalado pero sin perfil todavia (abrelo una vez)"
+    else
+      info "$etiqueta: no esta en esta maquina"
+    fi
+    continue
+  fi
+  if grep -qF 'enable-webrtc-pipewire-camera@1' "$ls_file" 2>/dev/null; then
+    ok "$etiqueta: flag enable-webrtc-pipewire-camera activado"
+  else
+    no "$etiqueta: falta el flag enable-webrtc-pipewire-camera  ->  ./navegadores.sh"
+  fi
+  # Si el navegador esta abierto, cualquier cambio se pierde al cerrarlo.
+  pgrep -x "$proc" >/dev/null 2>&1 && info "$etiqueta: esta abierto ahora mismo; cierralo antes de ./navegadores.sh"
+done
 
 # Firefox: el pref se pone en user.js, que gana sobre prefs.js en cada arranque.
 perfiles_ff=()
@@ -78,7 +102,11 @@ if [[ -d "$HOME/.mozilla/firefox" ]]; then
   done < <(grep -oP '^Path=\K.*' "$HOME/.mozilla/firefox/profiles.ini" 2>/dev/null || true)
 fi
 if [[ ${#perfiles_ff[@]} -eq 0 ]]; then
-  info "Firefox: sin perfiles en esta maquina, nada que hacer"
+  if command -v firefox >/dev/null 2>&1; then
+    info "Firefox: instalado pero sin perfil todavia (abrelo una vez y cierralo)"
+  else
+    info "Firefox: no esta en esta maquina"
+  fi
 else
   con=0
   for pf in "${perfiles_ff[@]}"; do
@@ -118,4 +146,39 @@ fi
 
 echo
 echo "== Microfono =="
-ok "no hay nada que hacer: PipeWire lo comparte solo (ver README)"
+# Compartirlo es gratis: PipeWire abre ALSA una vez y mezcla a todos los
+# clientes (medido, ver README). Lo que si falla en silencio es CUAL coge cada
+# programa: el que no elige uno a mano se lleva el que este por defecto, y el
+# micro de la webcam suele ganar por prioridad.
+ok "compartirlo no necesita nada: PipeWire mezcla a todos los clientes"
+
+if command -v pactl >/dev/null; then
+  defecto="$(pactl get-default-source 2>/dev/null || true)"
+  mapfile -t fuentes < <(pactl list sources short 2>/dev/null | awk '$2 !~ /\.monitor$/ {print $2}')
+
+  if [[ ${#fuentes[@]} -eq 0 ]]; then
+    no "PipeWire no ve ningun microfono"
+  else
+    info "microfonos disponibles (${#fuentes[@]}):"
+    for f in "${fuentes[@]}"; do
+      desc="$(pactl list sources 2>/dev/null \
+              | awk -v n="Name: $f" '$0 ~ n {found=1} found && /Description:/ {sub(/^\s*Description: /,""); print; exit}')"
+      if [[ "$f" == "$defecto" ]]; then
+        printf '          \033[32m*\033[0m %s\n' "${desc:-$f}"
+      else
+        printf '            %s\n' "${desc:-$f}"
+      fi
+    done
+    info "(* = el que se llevan los programas que no eligen a mano)"
+
+    # El aviso concreto: hay mas de un micro y el elegido es el de la camara.
+    if [[ ${#fuentes[@]} -gt 1 && "$defecto" == *[Ww]ebcam* ]]; then
+      avi "el microfono por defecto es el de la WEBCAM, no el micro aparte"
+      info "los navegadores y Zoom se lo llevaran sin avisar. Para cambiarlo:"
+      info "  pactl set-default-source <nombre-del-micro-bueno>"
+      info "(wireplumber lo recuerda entre reinicios)"
+    fi
+  fi
+else
+  info "sin pactl no se puede comprobar cual es el microfono por defecto"
+fi

@@ -209,30 +209,34 @@ from bad reasoning. These are the traps, each one found the hard way:
 The general rule: when a probe says something is broken, first prove the probe
 can see something that is known to work.
 
-### Sharing the webcam between OBS and Zoom web (`obs/`)
+### Sharing the webcam and mic between OBS, browsers and Zoom (`obs/`)
 
-The camera **can** be shared, and the first conclusion here was wrong. What is
-exclusive is the *device node*, not the camera:
+The camera **can** be shared, by more than two programs, and the first
+conclusion here was wrong. What is exclusive is the *device node*, not the
+camera:
 
-- **The microphone was never the problem.** PipeWire opens the ALSA device once
-  and mixes N clients, so OBS and Zoom capture it simultaneously with no setup.
-  Two concurrent `pw-record` processes on the same source both appear as
-  source-outputs on it and both write valid audio.
 - **`/dev/video0` is exclusive.** With one capture running, the second dies at
   `VIDIOC_REQBUFS returned -1 (Device or resource busy)`. The webcam's second
   node `/dev/video1` is no escape hatch — *Metadata Capture* only, no image.
-- **PipeWire multiplexes video too**, and already exposes the webcam as a
-  `Video/Source` node with nothing installed. Measured with two overlapping
-  `gst-launch-1.0 pipewiresrc` consumers on the same node: both `[active]` in
-  `wpctl status` at once, 300 and 120 frames, no errors.
+- **PipeWire multiplexes video**, and already exposes the webcam as a
+  `Video/Source` node with nothing installed. Measured on the desktop with
+  **three** overlapping consumers (one `gst-launch` standing in for OBS plus two
+  Chromium instances on separate profiles): all three `[active]` on
+  `C922 Pro Stream Webcam:capture_1` at once, zero errors. During that same
+  overlap, `fuser -v /dev/video0` showed **one** opener — `pipewire`. That is
+  the whole mechanism, and it is why there is no limit of two.
+- **The microphone was never the problem.** PipeWire opens the ALSA device once
+  and mixes N clients, so OBS and Zoom capture it simultaneously with no setup.
+  Measured on the Blue Yeti: two `pw-record` both `[active]` on
+  `Blue Microphones:capture_FL`, both WAVs valid.
 
 So there are two routes, and `obs/README.md` documents both. Route 1 (PipeWire:
-OBS's `Video Capture Device (PipeWire)` source + Chromium's
+OBS's `Video Capture Device (PipeWire)` source + the browser's
 `enable-webrtc-pipewire-camera` flag) needs no root and no module, and Zoom sees
 the raw camera. Route 2 (v4l2loopback) is what you want for teaching, because
 Zoom then sees the composed OBS scene; `exclusive_caps=1` is the option Chromium
 needs to list the loopback node, and that one is **still unverified** — the
-module is not installed on the laptop.
+module is installed on neither machine.
 
 **The measurement trap:** the first two-consumer test showed both processes
 getting all their frames and proved nothing — the first had already finished
@@ -240,14 +244,42 @@ before the second started. Overlap has to be confirmed in the graph
 (`wpctl status`) *while* both run, which is the same rule as everywhere else in
 this file: prove the probe can see the thing before believing it.
 
-Route 1 is scripted in `obs/navegadores.sh` (both browsers, idempotent,
-`--off` reverses it), and the two browsers store it in completely different
-places: Chromium's flag goes in `Local State` — the same file `chrome://flags`
-writes — while Firefox's `media.webrtc.camera.allow-pipewire` must go in
-`user.js`, **not** `prefs.js`, because Firefox rewrites `prefs.js` on exit and
-would drop it. `user.js` is reread at every start and wins, at the cost of
-pinning the value beyond `about:config`'s reach. Both browsers must be closed
-when the script runs, for the same reason.
+Route 1 is scripted in `obs/navegadores.sh`, which covers **every Chromium
+derivative** (Chromium, Vivaldi, Chrome, Brave — same flag, same `Local State`
+format, one function) plus Firefox, and is idempotent with `--off` to reverse.
+Three things that bite:
+
+- **The process name is not the command name.** Vivaldi runs as `vivaldi-bin`,
+  so the `pgrep -x vivaldi` guard never fired: the script would write the flag
+  and Vivaldi would erase it on exit, silently. Every browser row carries its
+  exact process name for that reason.
+- **Firefox's two browsers store the setting in completely different places.**
+  Chromium's flag goes in `Local State` — the same file `chrome://flags` writes
+  — while Firefox's `media.webrtc.camera.allow-pipewire` must go in `user.js`,
+  **not** `prefs.js`, because Firefox rewrites `prefs.js` on exit and would drop
+  it. `user.js` is reread at every start and wins, at the cost of pinning the
+  value beyond `about:config`'s reach. Both browsers must be closed when the
+  script runs, for the same reason.
+- **Installed ≠ profiled.** No profile exists until the first launch; the
+  desktop has `firefox` in `/usr/bin` and no `~/.mozilla` at all. The script
+  says so in those words, because a bare "skipped" reads as "already fine".
+
+Before writing, the script greps the installed binary for the flag string
+(`grep -qa`, tenths of a second on 300 MB) so a future Chromium that drops or
+renames it produces a warning instead of a dead `Local State` entry. Present in
+Chromium 151 and Vivaldi 8.1. Note `/usr/bin/chromium` is a 14 KB wrapper — grep
+`/usr/lib/chromium/chromium`, or the check silently finds nothing.
+
+**Sharing the mic is free; picking the right one is not.** In the three-consumer
+measurement both browsers captured `C922 Pro Stream Webcam:capture_FL` — the
+webcam's built-in mic — while the Blue Yeti sat unused, because whatever does
+not name a device gets the default and WirePlumber ranks the webcam mic higher.
+Fixed once with `pactl set-default-source <name>`, persisted by WirePlumber in
+`~/.local/state/wireplumber/default-nodes`. That only helps callers that ask for
+the default: OBS names the device per audio source, and browsers remember the
+choice **per site**, so a Zoom tab that already stored the webcam mic keeps it.
+`comprobar.sh` lists the mics, marks the active one and warns when a webcam mic
+wins over a standalone one.
 
 `obs/comprobar.sh` reports the state of either route on any machine without
 changing anything; nothing in it hardcodes `/dev/videoN` or node ids, since both
