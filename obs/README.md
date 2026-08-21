@@ -82,9 +82,13 @@ en vez de abrir `/dev/video0`.
 - **OBS**: como fuente, `Video Capture Device (PipeWire)` (sale marcada BETA),
   no la de V4L2 de toda la vida. Esto no lo hace el script, es un clic.
 
-Los navegadores tienen que estar **cerrados** al pasar el script, y despues hay
-que reiniciarlos **enteros**: enumeran los dispositivos al arrancar y no vuelven
-a mirar.
+Los derivados de Chromium tienen que estar **cerrados** al pasar el script:
+reescriben `Local State` al salir y se llevarian el cambio por delante. Firefox
+no hace falta cerrarlo -- lo que reescribe al salir es `prefs.js`, y `user.js` no
+lo toca nunca, que es justo por lo que se usa ese archivo.
+
+En los dos casos hay que reiniciar el navegador **entero** despues: enumeran los
+dispositivos al arrancar y no vuelven a mirar.
 
 Zoom ve **la camara tal cual**. Sirve para grabar la clase en OBS mientras Zoom
 muestra tu cara normal.
@@ -107,6 +111,23 @@ conociendo el flag (`grep -qa` sobre el ejecutable, decimas de segundo aun con
 300 MB). El dia que Chromium lo quite o lo renombre, el script avisa en vez de
 dejar una entrada muerta en `Local State`. Comprobado presente en Chromium 151 y
 Vivaldi 8.1.
+
+### Firefox puede tener mas perfiles de los que crees
+
+El script recorre **todos** los perfiles de `profiles.ini`, no solo el activo, y
+no es por prudencia. Firefox se crea un perfil nuevo por instalacion cuando el
+que encuentra no le cuadra, y el bloque `[InstallXXXX]` lleva su propio
+`Default` que **manda sobre** el `Default=1` del perfil:
+
+```
+[Install4F96D1932A9F858E]
+Default=p96pwk1i.default-release-1
+Locked=1
+```
+
+Visto aqui: un perfil creado a mano con `firefox -CreateProfile` quedo ignorado
+y Firefox arranco con otro recien hecho, sin el pref. El perfil que de verdad se
+esta usando es el que tiene `.parentlock`.
 
 ## Camino 2 -- v4l2loopback: Zoom ve la escena de OBS
 

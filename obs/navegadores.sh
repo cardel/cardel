@@ -117,10 +117,13 @@ aplicar_firefox() {
     return
   fi
 
-  if pgrep -x firefox >/dev/null 2>&1; then
-    echo "Firefox: ESTA ABIERTO -- cierralo y repite, si no se pierde el cambio" >&2
-    return
-  fi
+  # A Firefox NO hay que cerrarlo, al reves que a los de Chromium. Lo que
+  # reescribe al salir es prefs.js; user.js no lo toca nunca -- por eso se usa
+  # user.js y no prefs.js. Se puede escribir con el navegador abierto y el valor
+  # entra en el siguiente arranque, que hace falta igual porque los dispositivos
+  # se enumeran al empezar.
+  ABIERTO=0
+  pgrep -x firefox >/dev/null 2>&1 && ABIERTO=1
 
   local perfiles=()
   while IFS= read -r ruta; do
@@ -132,6 +135,10 @@ aplicar_firefox() {
     return
   fi
 
+  # Todos los perfiles, no solo el activo: Firefox crea uno nuevo por instalacion
+  # cuando el que hay no le cuadra --el bloque [InstallXXXX] de profiles.ini lleva
+  # su propio Default, que manda sobre el Default=1 del perfil-- y entonces el
+  # que de verdad se usa no es el que uno preparo.
   local linea="user_pref(\"$PREF_FIREFOX\", true);"
   for p in "${perfiles[@]}"; do
     local uj="$p/user.js"
@@ -160,6 +167,9 @@ aplicar_firefox() {
       echo "Firefox: activado en $(basename -- "$p")"
     fi
   done
+  if [[ "$ABIERTO" == "1" ]]; then
+    echo "Firefox: esta abierto -- el cambio entra al reiniciarlo entero"
+  fi
 }
 
 for entrada in "${NAVEGADORES[@]}"; do
