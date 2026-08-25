@@ -80,6 +80,23 @@
         { "task_name": "LaTeX: contar palabras", "reveal_target": "center" }
       ],
 
+      // ── Markdown ─────────────────────────────────────────────────────
+      // p y s son la vista previa de Zed, que dibuja los mermaid sola.
+      // f pasa por pandoc, que es lo unico que renderiza las formulas.
+      "space m p": "markdown::OpenPreview",
+      "space m s": "markdown::OpenPreviewToTheSide",
+      "space m f": [
+        "task::Spawn",
+        { "task_name": "Markdown: ver con formulas", "reveal_target": "dock" }
+      ],
+      "space m d": [
+        "task::Spawn",
+        {
+          "task_name": "Markdown: PDF de la carpeta (pdfgithub)",
+          "reveal_target": "dock"
+        }
+      ],
+
       // ── ventanas ─────────────────────────────────────────────────────
       "space w h": "pane::SplitLeft",
       "space w j": "pane::SplitDown",

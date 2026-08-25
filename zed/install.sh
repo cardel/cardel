@@ -18,7 +18,7 @@ SRC_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 DST_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zed"
 
 ARCHIVOS=(settings.json keymap.json tasks.json debug.json)
-DIRECTORIOS=(themes)
+DIRECTORIOS=(themes snippets)
 
 rojo() { printf '\033[31m%s\033[0m\n' "$*" >&2; }
 avi() { printf '\033[33m%s\033[0m\n' "$*" >&2; }
@@ -80,7 +80,8 @@ except json.JSONDecodeError as e:
 PY
 }
 
-for f in "${ARCHIVOS[@]}"; do
+# Los snippets son JSONC igual que el resto y se validan igual.
+for f in "${ARCHIVOS[@]}" snippets/latex.json snippets/markdown.json; do
   if [[ ! -f "$SRC_DIR/$f" ]]; then
     rojo "error: falta $SRC_DIR/$f"
     exit 1
@@ -90,7 +91,7 @@ for f in "${ARCHIVOS[@]}"; do
     exit 1
   fi
 done
-echo "JSON valido: ${ARCHIVOS[*]}"
+echo "JSON valido: ${ARCHIVOS[*]} + snippets/"
 
 # ---------------------------------------------------------------------------
 # 2. Enlazar
@@ -134,10 +135,12 @@ comprobar_binario() {
   fi
 }
 
-comprobar_binario latexmk  "compilar al guardar; sin el no se compila nada" texlive-binextra
-comprobar_binario zathura  "ver el PDF y saltar a la linea (synctex)"       "zathura zathura-pdf-mupdf"
+comprobar_binario latexmk  "compilar un .tex sin Makefile (space l b)"        texlive-binextra
+comprobar_binario zathura  "ver el PDF en la linea del cursor (space l v)"    "zathura zathura-pdf-mupdf"
 comprobar_binario chktex   "avisos de LaTeX en el editor"                   texlive-binextra
 comprobar_binario texcount "la tarea 'LaTeX: contar palabras'"              texlive-binextra
+comprobar_binario pandoc   "formulas en Markdown (space m f)"                pandoc
+comprobar_binario mmdc     "mermaid en el PDF de pdfgithub (space m d)"      mermaid-cli
 comprobar_binario lazygit  "la tarea 'Lazygit' (space g g)"                 lazygit
 comprobar_binario zeditor  "busqueda inversa: del PDF de vuelta al .tex"    zed
 
@@ -154,7 +157,7 @@ fi
 EXT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zed/extensions/installed"
 echo
 echo "== Extensiones =="
-for e in latex ltex dockerfile html log; do
+for e in latex ltex mermaid dockerfile html log; do
   if [[ -d "$EXT_DIR/$e" ]]; then
     printf '  %-12s instalada\n' "$e"
   else

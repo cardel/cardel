@@ -10,6 +10,11 @@
   "auto_install_extensions": {
     "latex": true,
     "ltex": true,
+    // Solo para colorear el codigo mermaid: DIBUJAR los diagramas ya lo hace
+    // Zed por su cuenta, con un crate propio (mermaid_render) y aplicando el
+    // tema del editor. La vista previa de Markdown los muestra sin instalar
+    // nada.
+    "mermaid": true,
     "dockerfile": true,
     "html": true,
     "log": true
@@ -83,22 +88,64 @@
   },
 
   // ─── Ajustes por lenguaje ─────────────────────────────────────────────
+  //
+  // Zed trae un trato de "prosa" para Markdown, Plain Text y Git Commit, pero
+  // NO para LaTeX: su bloque por defecto solo fija el formateador y el
+  // servidor. Aqui se le da el mismo trato, que es lo que corresponde a un
+  // lenguaje que es 90% texto corrido.
+  //
+  // Las 80 columnas no son un numero redondo elegido al azar: es a lo que
+  // esta escrito el material. En main.tex, 1201 de 1247 lineas no vacias
+  // caben en 80, y la mediana es 70. Los .md del workspace dan p90 entre
+  // 76 y 82.
   "languages": {
     "LaTeX": {
       "soft_wrap": "editor_width",
       "tab_size": 2,
-      "preferred_line_length": 100,
-      // latexindent no esta instalado; formatear al guardar seria un error
-      // silencioso en cada guardado, que ademas dispara la compilacion.
+      "preferred_line_length": 80,
+      "wrap_guides": [80],
+
+      // Lo que hace que "gq" funcione. Por defecto LaTeX hereda
+      // allow_rewrap = "in_comments", y en el codigo de Zed eso es literal:
+      //   InComments => inside_comment
+      // o sea que gqip sobre un parrafo no hace absolutamente nada, y solo
+      // reflui­ria dentro de un comentario con %.
+      "allow_rewrap": "anywhere",
+
+      // Guardar no debe reescribir lineas que no se tocaron. Con el valor por
+      // defecto (true), abrir y guardar cualquiera de los 28 archivos del
+      // workspace que tienen espacios finales produce un diff de lineas
+      // ajenas, en manuscritos que van firmados por varias personas. Zed ya
+      // hace esta excepcion con Markdown y con Diff.
+      "remove_trailing_whitespace_on_save": false,
+
+      // El formateo al vuelo estorba en prosa; mismo criterio que Markdown.
+      "use_on_type_format": false,
+
+      // Sin esto, el menu se llena de palabras sacadas del propio buffer y
+      // tapa lo util, que son las de texlab (\cite, \ref, \label) y Copilot.
+      "completions": { "words": "disabled" },
+
+      // latexindent llega con texlive-binextra; hasta entonces formatear al
+      // guardar seria un error silencioso en cada guardado.
       "format_on_save": "off"
     },
     "BibTeX": {
       "tab_size": 2,
+      "remove_trailing_whitespace_on_save": false,
       "format_on_save": "off"
     },
     "Markdown": {
-      "soft_wrap": "editor_width",
+      // allow_rewrap, soft_wrap, use_on_type_format, completions.words y
+      // remove_trailing_whitespace_on_save ya vienen bien de fabrica. Solo
+      // falta la medida.
+      "preferred_line_length": 80,
+      "wrap_guides": [80],
       "format_on_save": "off"
+    },
+    "Plain Text": {
+      "preferred_line_length": 80,
+      "wrap_guides": [80]
     }
   },
 

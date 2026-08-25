@@ -16,6 +16,7 @@ texlab 5.26.0.
 | `keymap.json` | `~/.config/zed/keymap.json` |
 | `tasks.json` | `~/.config/zed/tasks.json` |
 | `debug.json` | `~/.config/zed/debug.json` |
+| `snippets/` | `~/.config/zed/snippets/` |
 | `themes/` | `~/.config/zed/themes/` |
 
 Todo enlazado, no copiado.
@@ -150,8 +151,95 @@ Ahora la instala Zed sola, por `auto_install_extensions`. **Descarga unos
 320 MB** la primera vez: el unico artefacto de Linux que publica LTeX+ trae su
 propio JRE dentro.
 
-Para un documento en ingles no hay que tocar la configuracion; basta una linea
-magica en el `.tex`:
+Con que idioma revisa, y por que no hay que tocarlo, mas abajo.
+
+## LaTeX y Markdown son prosa, y Zed solo lo sabe de uno
+
+Zed trae un trato de "prosa" para Markdown, Plain Text y Git Commit. Para
+**LaTeX no**: su bloque por defecto se limita a fijar el formateador y el
+servidor. Aqui se le da el mismo trato, que es lo que corresponde a un lenguaje
+que es texto corrido con marcas.
+
+Lo que cambia, y por que:
+
+- **`allow_rewrap: "anywhere"`.** Es lo que hace que `gq` funcione. Por defecto
+  LaTeX hereda `"in_comments"`, y en el codigo de Zed eso es literal
+  (`crates/editor/src/rewrap.rs`): `InComments => inside_comment`. O sea que
+  `gqip` sobre un parrafo no hacia absolutamente nada, y solo refluia dentro de
+  un comentario con `%`.
+- **`remove_trailing_whitespace_on_save: false`.** Con el valor por defecto
+  (`true`), abrir y guardar cualquiera de los **28 archivos** del workspace de
+  papers que llevan espacios finales produce un diff de lineas que no se
+  tocaron, en manuscritos firmados por varias personas. Zed ya hace esta misma
+  excepcion con Markdown y con Diff.
+- **`completions.words: "disabled"`.** Sin esto el menu se llena de palabras
+  sacadas del propio buffer y tapa lo util, que son las de texlab (`\cite`,
+  `\ref`, `\label`) y las de Copilot. Mismo criterio que Markdown.
+- **80 columnas**, no 100. No es un numero redondo elegido a ojo: es a lo que
+  esta escrito el material. En `main.tex`, 1201 de 1247 lineas no vacias caben
+  en 80 y la mediana es 70; los `.md` del workspace dan p90 entre 76 y 82. El
+  `wrap_guides` pinta la marca donde toca cortar.
+
+## Mermaid y formulas en Markdown
+
+Dos cosas que suenan parecidas y se resuelven de forma distinta.
+
+**Los diagramas mermaid los dibuja Zed solo.** No hace falta instalar nada: el
+binario lleva un crate propio, `mermaid_render`, y los colorea con el tema del
+editor. Se ven con `space m p`. La extension `mermaid` que declara
+`auto_install_extensions` es solo para colorear el codigo mientras se escribe.
+
+**Las formulas no se renderizan, y es a proposito.** El parser de Markdown de
+Zed no activa `ENABLE_MATH` — de hecho la lista se llama `UNWANTED_OPTIONS` y
+`ENABLE_MATH` esta dentro (`crates/markdown/src/parser.rs`), y los eventos
+`InlineMath` y `DisplayMath` se descartan con un brazo vacio. Tampoco hay
+extension que lo arregle: el registro no devuelve nada para *math*, *katex* ni
+*latex-markdown*.
+
+La salida es pasar por pandoc, que si las renderiza. `space m f` convierte el
+archivo actual con `pandoc --pdf-engine=xelatex` y lo abre. Escribe en
+`$TMPDIR/zed-md/`, nunca junto al fuente, para no ensuciar ningun repositorio.
+Comprobado con `$a^2+b^2=c^2$` y un sumatorio: salen bien.
+
+Lo que pandoc **no** hace por su cuenta es rasterizar los mermaid; para eso esta
+`space m d`, que llama a `pdfgithub/generate-pdf.sh` sobre la carpeta entera y
+usa `mmdc`. Resumen:
+
+| Quiero | Tecla | Lo hace |
+|---|---|---|
+| ver diagramas mermaid | `space m p` | Zed, nativo |
+| ver formulas | `space m f` | pandoc + xelatex |
+| ambas cosas, en PDF | `space m d` | pdfgithub + mmdc |
+
+## Snippets
+
+En `snippets/`, enlazados a `~/.config/zed/snippets/`. Se escribe el prefijo y
+se acepta con Tab.
+
+Los prefijos de LaTeX no son genericos: salen de contar el uso real en el
+workspace de papers — `table` 82, `tabular` 57, `figure` 39, `enumerate` 37,
+`tikzpicture` 34, `tabularx` 27; y en macros, `cite` 490, `label` 277, `cref`
+213, `parencite` 95, `textcite` 55. De ahi `fig`, `tab`, `tabx`, `tikz`, `plot`,
+`cite`, `tcite`, `cref`, `Cref`, `lab`, `sec`, `eq`.
+
+Dos detalles del formato, comprobados en `crates/snippet` de Zed:
+
+- **Admiten comentarios**, porque los lee con `serde_json_lenient`.
+- **La barra invertida escapa solo ante `$`, `\` y `}`.** Para que salga el `\\`
+  de final de fila de LaTeX hacen falta cuatro en el origen, que en JSON se
+  escriben como ocho. Por eso tampoco hay snippet de matematica en linea: el `$`
+  fuera de un marcador habria que escaparlo, y el autoclose de la extension ya
+  cierra el `$` solo.
+
+## El corrector cambia de idioma solo
+
+`ltex.language` esta en `es`, pero **24 de los 25 `.tex` del workspace estan en
+ingles**, y aun asi no hay que tocar nada: LTeX+ lee los comandos de babel y
+cambia su idioma segun lo que declare el documento. `\usepackage[american]{babel}`,
+que es lo que traen esos papers, esta explicitamente entre los que reconoce. El
+`es` de aqui es solo el respaldo para lo que no declare idioma.
+
+Para un documento sin babel, el snippet `ltex` inserta la linea magica:
 
 ```latex
 % LTeX: language=en-US
@@ -176,7 +264,9 @@ Lo que se anade aqui es lo que falta:
 | Tecla | Que hace |
 |---|---|
 | `space l b` / `space l w` | compilar / compilar en continuo |
-| `space l v` / `space l c` / `space l n` | ver PDF / limpiar / contar palabras |
+| `space l v` / `space l c` / `space l n` | ver PDF en esta linea / limpiar / contar palabras |
+| `space m p` / `space m s` | vista previa de Markdown (mermaid incluido) |
+| `space m f` / `space m d` | Markdown con formulas / PDF de la carpeta |
 | `space w h j k l` | dividir la ventana |
 | `space u w` / `space u l` / `space u i` / `space u a` | ajuste de linea / numeros / pistas / Copilot |
 | `space b d` / `space b q` | cerrar este / cerrar los demas |
@@ -293,7 +383,7 @@ decirlo. `install.sh` lo comprueba.
 
 ```bash
 sudo pacman -S --needed texlive-binextra zathura zathura-pdf-mupdf \
-                        ttf-iosevkaterm-nerd lazygit
+                        ttf-iosevkaterm-nerd lazygit mermaid-cli
 ```
 
 - `texlive-binextra` → `latexmk` (compilar), `texcount` (contar palabras).
@@ -301,3 +391,7 @@ sudo pacman -S --needed texlive-binextra zathura zathura-pdf-mupdf \
 - `zathura` + `zathura-pdf-mupdf` → visor con synctex en las dos direcciones.
 - `ttf-iosevkaterm-nerd` → la fuente que la configuracion ya pedia.
 - `lazygit` → la tarea de `space g g`.
+- `mermaid-cli` → `mmdc`, que es lo que rasteriza los diagramas en `space m d`.
+  Para *verlos* en Zed no hace falta: eso lo hace el editor por su cuenta.
+
+`pandoc` ya esta instalado, asi que `space m f` funciona desde ya.

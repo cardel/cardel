@@ -1,0 +1,202 @@
+// Snippets de LaTeX. Se escriben con el prefijo y se aceptan con Tab.
+// El nombre del archivo es el del lenguaje en minusculas, asi que esto cubre
+// .tex, .sty y .cls (los tres los declara la extension).
+//
+// Los prefijos no son genericos: salen de contar el uso real en
+// ~/repositorios/work/papers-project — table 82, tabular 57, figure 39,
+// enumerate 37, tikzpicture 34, tabularx 27; y en las macros, cite 490,
+// label 277, cref 213, parencite 95, textcite 55.
+//
+// Dos detalles del formato, ambos comprobados en crates/snippet de Zed:
+//   - Admite comentarios como este (los lee con serde_json_lenient).
+//   - La barra invertida escapa solo ante $ \ y }. Para que salga el \\ de
+//     final de fila de LaTeX hacen falta cuatro en el origen, que en JSON se
+//     escriben como ocho.
+//   - Por eso no hay snippet de matematica en linea: el $ fuera de un marcador
+//     habria que escaparlo, y el autoclose de la extension ya cierra el $ solo.
+{
+  "Figura": {
+    "prefix": "fig",
+    "body": [
+      "\\begin{figure}[${1:htbp}]",
+      "  \\centering",
+      "  \\includegraphics[width=${2:0.8}\\textwidth]{${3:ruta/imagen}}",
+      "  \\caption{${4:Descripcion}}",
+      "  \\label{fig:${5:etiqueta}}",
+      "\\end{figure}",
+      "$0"
+    ],
+    "description": "figure con includegraphics, caption y label"
+  },
+
+  "Tabla (booktabs)": {
+    "prefix": "tab",
+    "body": [
+      "\\begin{table}[${1:htbp}]",
+      "  \\centering",
+      "  \\caption{${2:Descripcion}}",
+      "  \\label{tab:${3:etiqueta}}",
+      "  \\begin{tabular}{${4:lrr}}",
+      "    \\toprule",
+      "    ${5:Columna} & ${6:Columna} & ${7:Columna} \\\\\\\\",
+      "    \\midrule",
+      "    $0 & & \\\\\\\\",
+      "    \\bottomrule",
+      "  \\end{tabular}",
+      "\\end{table}"
+    ],
+    "description": "table + tabular con reglas de booktabs"
+  },
+
+  "Tabla ancha (tabularx)": {
+    "prefix": "tabx",
+    "body": [
+      "\\begin{table}[${1:htbp}]",
+      "  \\centering",
+      "  \\caption{${2:Descripcion}}",
+      "  \\label{tab:${3:etiqueta}}",
+      "  \\begin{tabularx}{\\textwidth}{${4:lXX}}",
+      "    \\toprule",
+      "    ${5:Columna} & ${6:Columna} & ${7:Columna} \\\\\\\\",
+      "    \\midrule",
+      "    $0 & & \\\\\\\\",
+      "    \\bottomrule",
+      "  \\end{tabularx}",
+      "\\end{table}"
+    ],
+    "description": "table + tabularx a ancho de texto"
+  },
+
+  "Lista con vinetas": {
+    "prefix": "it",
+    "body": ["\\begin{itemize}", "  \\item $0", "\\end{itemize}"],
+    "description": "itemize"
+  },
+
+  "Lista numerada": {
+    "prefix": "en",
+    "body": ["\\begin{enumerate}", "  \\item $0", "\\end{enumerate}"],
+    "description": "enumerate"
+  },
+
+  "Figura TikZ": {
+    "prefix": "tikz",
+    "body": [
+      "\\begin{figure}[${1:htbp}]",
+      "  \\centering",
+      "  \\begin{tikzpicture}",
+      "    $0",
+      "  \\end{tikzpicture}",
+      "  \\caption{${2:Descripcion}}",
+      "  \\label{fig:${3:etiqueta}}",
+      "\\end{figure}"
+    ],
+    "description": "tikzpicture dentro de una figure"
+  },
+
+  "Grafica pgfplots": {
+    "prefix": "plot",
+    "body": [
+      "\\begin{tikzpicture}",
+      "  \\begin{axis}[",
+      "    xlabel={${1:eje x}},",
+      "    ylabel={${2:eje y}},",
+      "    width=${3:0.9}\\textwidth,",
+      "    grid=major,",
+      "  ]",
+      "    \\addplot coordinates {$0};",
+      "  \\end{axis}",
+      "\\end{tikzpicture}"
+    ],
+    "description": "axis de pgfplots con addplot"
+  },
+
+  "Entorno cualquiera": {
+    "prefix": "env",
+    "body": ["\\begin{${1:entorno}}", "  $0", "\\end{${1:entorno}}"],
+    "description": "begin/end con el nombre enlazado en los dos lados"
+  },
+
+  "Cita entre parentesis": {
+    "prefix": "cite",
+    "body": ["\\parencite{$1}$0"],
+    "description": "parencite (biblatex)"
+  },
+
+  "Cita en el texto": {
+    "prefix": "tcite",
+    "body": ["\\textcite{$1}$0"],
+    "description": "textcite (biblatex), el autor forma parte de la frase"
+  },
+
+  "Referencia cruzada": {
+    "prefix": "cref",
+    "body": ["\\cref{${1:tipo}:${2:etiqueta}}$0"],
+    "description": "cref de cleveref, que pone solo la palabra (Figura, Tabla)"
+  },
+
+  "Referencia cruzada al inicio": {
+    "prefix": "Cref",
+    "body": ["\\Cref{${1:tipo}:${2:etiqueta}}$0"],
+    "description": "Cref, version con mayuscula para empezar frase"
+  },
+
+  "Etiqueta": {
+    "prefix": "lab",
+    "body": ["\\label{${1:tipo}:${2:etiqueta}}$0"],
+    "description": "label"
+  },
+
+  "Seccion": {
+    "prefix": "sec",
+    "body": ["\\section{$1}", "\\label{sec:${2:etiqueta}}", "", "$0"],
+    "description": "section con su label"
+  },
+
+  "Subseccion": {
+    "prefix": "ssec",
+    "body": ["\\subsection{$1}", "\\label{subsec:${2:etiqueta}}", "", "$0"],
+    "description": "subsection con su label"
+  },
+
+  "Ecuacion": {
+    "prefix": "eq",
+    "body": [
+      "\\begin{equation}",
+      "  \\label{eq:${1:etiqueta}}",
+      "  $0",
+      "\\end{equation}"
+    ],
+    "description": "equation numerada"
+  },
+
+  "Cita textual": {
+    "prefix": "quote",
+    "body": ["\\begin{quote}", "  $0", "\\end{quote}"],
+    "description": "quote"
+  },
+
+  "Enfasis": {
+    "prefix": "emph",
+    "body": ["\\emph{$1}$0"],
+    "description": "emph"
+  },
+
+  "Negrita": {
+    "prefix": "tbf",
+    "body": ["\\textbf{$1}$0"],
+    "description": "textbf"
+  },
+
+  "Idioma de LTeX para este documento": {
+    "prefix": "ltex",
+    "body": ["% LTeX: language=${1:en-US}"],
+    "description": "Cambia el idioma del corrector solo en este archivo; el global es es"
+  },
+
+  "Pendiente": {
+    "prefix": "todo",
+    "body": ["% TODO: $0"],
+    "description": "comentario de pendiente"
+  }
+}

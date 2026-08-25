@@ -60,6 +60,33 @@
     "reveal": "always"
   },
 
+  // ─── Markdown ───────────────────────────────────────────────────────────
+  // Los diagramas mermaid se ven con "space m p", que es la vista previa de
+  // Zed: los dibuja el propio editor. Lo que esa vista NO hace es renderizar
+  // formulas — Zed descarta los eventos InlineMath y DisplayMath a proposito,
+  // y ENABLE_MATH esta en su lista de opciones no deseadas. Para eso esta esta
+  // tarea, que pasa por pandoc + xelatex.
+  {
+    "label": "Markdown: ver con formulas",
+    // Escribe en un temporal, no junto al fuente: asi no ensucia ningun
+    // repositorio. Si pandoc falla, no se abre nada.
+    "command": "out=\"${TMPDIR:-/tmp}/zed-md/$ZED_STEM.pdf\"; mkdir -p \"$(dirname \"$out\")\"; if pandoc \"$ZED_FILE\" -o \"$out\" --pdf-engine=xelatex -V mainfont='Noto Sans' -V geometry:margin=2.5cm; then echo \"$out\"; if command -v zathura >/dev/null; then zathura \"$out\" >/dev/null 2>&1 & else xdg-open \"$out\" >/dev/null 2>&1 & fi else echo 'pandoc fallo -- mira el error de arriba'; fi",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "no_focus"
+  },
+  {
+    // La tubería del repo: convierte una CARPETA de .md y ademas rasteriza
+    // los mermaid con mmdc, cosa que pandoc solo no hace.
+    "label": "Markdown: PDF de la carpeta (pdfgithub)",
+    "command": "s=\"$HOME/repositorios/cardel/pdfgithub/generate-pdf.sh\"; if [ ! -x \"$s\" ]; then echo \"no encuentro $s\"; exit 1; fi; \"$s\" --docs-dir \"$ZED_DIRNAME\" --output \"${TMPDIR:-/tmp}/zed-md\"",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+
   // ─── Navegacion ─────────────────────────────────────────────────────────
   {
     "label": "Yazi",

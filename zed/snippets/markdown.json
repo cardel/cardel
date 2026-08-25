@@ -1,0 +1,74 @@
+// Snippets de Markdown. Se escriben con el prefijo y se aceptan con Tab.
+//
+// Markdown ya recibe de Zed el trato de prosa (gq en cualquier sitio, sin
+// borrado de espacios finales al guardar); lo unico que anade settings.json es
+// la medida de 80 columnas. Esto es lo otro que faltaba.
+//
+// El bloque mermaid esta aqui porque el generador de PDF del repo lo renderiza
+// con mmdc — ver pdfgithub/.
+{
+  "Bloque de codigo": {
+    "prefix": "code",
+    "body": ["```${1:bash}", "$0", "```"],
+    "description": "bloque de codigo con lenguaje"
+  },
+
+  "Diagrama mermaid": {
+    "prefix": "mermaid",
+    "body": ["```mermaid", "${1:flowchart TD}", "  $0", "```"],
+    "description": "diagrama mermaid; pdfgithub lo renderiza con mmdc"
+  },
+
+  "Tabla": {
+    "prefix": "tab",
+    "body": [
+      "| ${1:Columna} | ${2:Columna} |",
+      "|---|---|",
+      "| $0 | |"
+    ],
+    "description": "tabla de dos columnas"
+  },
+
+  "Enlace": {
+    "prefix": "link",
+    "body": ["[${1:texto}](${2:url})$0"],
+    "description": "enlace"
+  },
+
+  "Imagen": {
+    "prefix": "img",
+    "body": ["![${1:descripcion}](${2:ruta})$0"],
+    "description": "imagen"
+  },
+
+  "Detalle plegable": {
+    "prefix": "det",
+    "body": [
+      "<details>",
+      "<summary>${1:Titulo}</summary>",
+      "",
+      "$0",
+      "",
+      "</details>"
+    ],
+    "description": "seccion plegable, util en README y en informes largos"
+  },
+
+  "Cita": {
+    "prefix": "quote",
+    "body": ["> $0"],
+    "description": "cita"
+  },
+
+  "Pendiente": {
+    "prefix": "todo",
+    "body": ["- [ ] $0"],
+    "description": "casilla de tarea"
+  },
+
+  "Nota al pie": {
+    "prefix": "fn",
+    "body": ["[^${1:id}]$0", "", "[^${1:id}]: ${2:texto}"],
+    "description": "nota al pie con la referencia enlazada"
+  }
+}

@@ -260,6 +260,32 @@ Two more, about the keymap:
 - **A prefix and a longer sequence cannot share a key.** `space g` sat next to
   `space g g`, and `space o` next to `space o s`.
 
+Two more, about writing rather than building:
+
+- **Zed treats Markdown, Plain Text and Git Commit as prose, but not LaTeX.**
+  Its default LaTeX block only sets the formatter and the server, so LaTeX
+  inherits `allow_rewrap: "in_comments"` — and in `crates/editor/src/rewrap.rs`
+  that is literal (`InComments => inside_comment`), meaning `gqip` on a
+  paragraph did nothing at all. It also inherits
+  `remove_trailing_whitespace_on_save: true`, which rewrites untouched lines in
+  co-authored manuscripts (28 files in `papers-project` carry trailing spaces).
+  `zed/settings.json` now gives LaTeX the same treatment Markdown already gets.
+  The 80-column measure is not a round number: 1201 of 1247 non-empty lines in
+  `main.tex` fit in 80, median 70.
+- **Mermaid renders natively; math does not, on purpose.** Zed ships a
+  `mermaid_render` crate and themes diagrams to the editor, so ```mermaid blocks
+  show up in the Markdown preview with nothing installed. Math is the opposite:
+  `crates/markdown/src/parser.rs` leaves `ENABLE_MATH` out of `PARSE_OPTIONS`
+  and lists it under `UNWANTED_OPTIONS`, and `InlineMath`/`DisplayMath` events
+  hit an empty match arm. No extension fixes it — the registry has nothing for
+  *math*, *katex* or *latex-markdown*. The way out is pandoc (`space m f`),
+  which writes to `$TMPDIR/zed-md/` so no repository gets dirtied.
+
+Also worth knowing: **LTeX+ switches language from babel by itself.**
+`ltex.language` is `es`, but 24 of the 25 `.tex` files in `papers-project` are
+English and need no change — `\usepackage[american]{babel}` is on LTeX+'s list
+of recognised babel commands. The `es` here is only the fallback.
+
 Do **not** re-bind LSP navigation. Zed's stock vim keymap already follows modern
 nvim conventions (`K`, `g d`, `g y`, `g I`, `g r r`, `g r n`, `g r a`, `] d`,
 `] c`, `g O`). Before adding any binding, check that the action actually exists —
