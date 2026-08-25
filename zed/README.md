@@ -194,6 +194,59 @@ Dos cosas por decidir, que no se tocaron porque son gusto personal:
 - Las predicciones estan activas tambien en LaTeX. Escribiendo prosa pueden
   molestar; `space u a` las apaga y enciende sin tocar la configuracion.
 
+### Ajustes obsoletos: Zed avisa, pero con una notificacion
+
+Zed lleva un migrador (`crates/migrator/`, 43 reglas) y, cuando encuentra una
+clave vieja, muestra una notificacion — *"file uses deprecated settings which can
+be automatically updated"* — **no un error**. El ajuste viejo se sigue leyendo,
+asi que nada parece roto y es facil convivir con el durante meses.
+
+Este archivo llevaba una: `features.edit_prediction_provider`, que la migracion
+`m_2026_02_02` mueve a `edit_predictions.provider` (y borra `features` si queda
+vacio). Venia heredada de la configuracion anterior.
+
+El valor va como **cadena**, no como objeto. Poner `{ "name": "copilot" }` da
+`unknown variant 'name', expected one of 'none', 'copilot', 'zed', 'codestral',
+'ollama', 'open_ai_compatible_api', 'mercury'`.
+
+El resto esta al dia. Cruzadas las 43 reglas contra todas las claves y acciones
+de aqui, las unicas coincidencias son nombres **destino**, no obsoletos:
+`agent_ui_font_size` (regla `m_2025_10_03`, que renombra `agent_font_size`),
+`menu::SelectPrevious`, `editor::ToggleEditPrediction`,
+`workspace::ActivatePaneLeft` y `vim::PushAddSurrounds`. De paso queda claro que
+el `workspace::ActivatePaneInDirection` del repo de referencia es justamente la
+forma vieja.
+
+Para revisarlo en el futuro, sin leer las 43 reglas a mano:
+
+```bash
+# nombres obsoletos (origen) frente a los nuevos (destino) en cada regla
+grep -rn '("[a-z_:]*", "[a-z_:]*")' crates/migrator/src/migrations/
+```
+
+### Un error del log que no significa nada
+
+En cada escritura de `settings.json` aparece:
+
+```
+ERROR [crates/zed/src/main.rs:1917] missing field `name` at line 171 column 1
+```
+
+**Es ruido y se puede ignorar.** Zed mete el archivo de ajustes en un
+deserializador que exige un `name` de primer nivel — la forma de un tema — y eso
+no depende de lo que haya dentro: con `settings.json` reducido a `{}` el mensaje
+sale igual, y la posicion sigue al archivo (`line 1 column 2` con `{}`,
+`column 23` con `{"theme": "One Dark"}`, `line 171 column 1` con el archivo
+completo). Tampoco es la carpeta `themes/`: quitandola sigue saliendo.
+
+Lo que si importa es el **otro** mensaje, que es el de verdad:
+
+```
+ERROR [zed::zed] Failed to load user settings: ...
+```
+
+Ese aparece solo cuando un valor esta mal, y es el que hay que mirar.
+
 ## `agent_font_size` no existe
 
 Estaba en el archivo y no hacia nada. Zed solo conoce `agent_ui_font_size` y

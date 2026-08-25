@@ -61,8 +61,12 @@
 
   // ─── Copilot ──────────────────────────────────────────────────────────
   "show_edit_predictions": true,
-  "features": {
-    "edit_prediction_provider": "copilot"
+  // Antes esto era "features": { "edit_prediction_provider": ... }. Zed lo
+  // movio aqui (migracion m_2026_02_02) y avisa del cambio con una
+  // notificacion, no con un error: el ajuste viejo se sigue leyendo, asi que
+  // nada parece roto mientras tanto.
+  "edit_predictions": {
+    "provider": "copilot"
   },
   "agent": {
     "dock": "right",

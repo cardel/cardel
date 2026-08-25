@@ -275,6 +275,23 @@ rejected values by name while Zed is running. It is what caught
 `reveal: "on_error"` in `tasks.json` (the valid variants are `always`,
 `no_focus`, `never`).
 
+Two things about that log, both learned the hard way:
+
+- **`ERROR ... missing field \`name\` at line N column 1` is noise.** It fires on
+  every write to `settings.json` regardless of content — with the file reduced to
+  `{}` it still appears, and the position just tracks the file (`line 1 column 2`
+  for `{}`, `line 171 column 1` for the real one). It is not the `themes/`
+  directory either. The message that actually matters is
+  `ERROR [zed::zed] Failed to load user settings: ...`, which only appears when a
+  value is genuinely wrong.
+- **Deprecated settings surface as a notification, not an error.** Zed's migrator
+  (`crates/migrator/`, 43 rules) keeps reading the old key, so nothing looks
+  broken. `features.edit_prediction_provider` had been dead weight until rule
+  `m_2026_02_02` was checked by hand; it now lives at
+  `edit_predictions.provider`, and the value is a **string**, not an object.
+  Before adding any setting or action, grep those rules — they also confirm which
+  of two similar names is the current one.
+
 ### Sharing the webcam and mic between OBS, browsers and Zoom (`obs/`)
 
 The camera **can** be shared, by more than two programs, and the first
