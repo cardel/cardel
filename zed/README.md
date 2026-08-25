@@ -39,24 +39,53 @@ meses desviada, con cuatro bloques de paneles que el repo no tenia.
 
 ## LaTeX
 
-### Guardar es el unico disparador de compilacion que existe
+### texlab no puede compilar aqui, y por eso lo hacen las tareas
 
-Esto explica por que antes no compilaba nada. texlab expone compilar y saltar al
-PDF como **comandos LSP** (`workspace/executeCommand`), y **Zed no tiene forma de
-invocar un comando LSP arbitrario**: no hay accion, ni orden de la paleta, ni
-nada en la extension (su `extension.toml` declara `capabilities = []` y ningun
-`slash_command`).
+texlab expone compilar y saltar al PDF como **comandos LSP**
+(`workspace/executeCommand`), y **Zed no tiene forma de invocar un comando LSP
+arbitrario**: no hay accion, ni orden de la paleta, ni nada en la extension (su
+`extension.toml` declara `capabilities = []` y ningun `slash_command`).
 
-O sea: la unica via es que texlab compile solo, al guardar. Con
-`build.onSave: false` — que es lo que habia — **no hay ninguna manera de compilar
-desde el editor**. Por eso ahora esta en `true`, junto con
-`forwardSearchAfter: true`: guardar compila y el PDF salta a la linea del cursor.
+O sea: el unico disparador que texlab ofrece a Zed es **guardar**. Y encenderlo
+(`build.onSave: true`) no sirve aqui, por dos motivos medidos sobre
+`~/repositorios/work/papers-project`:
 
-`autosave` esta explicitamente en `"off"` por lo mismo: con autoguardado, cada
-pausa al teclear lanzaria una compilacion.
+- **Fallaria en cada guardado.** Sus papers resuelven `infedu.cls` por
+  `TEXINPUTS` desde `template/`. Sin esa variable no aparece —
+  `env -u TEXINPUTS kpsewhich infedu.cls` no devuelve nada — y latexmk, que es
+  lo que texlab lanza, no la exporta.
+- **Ensuciaria el arbol.** La regla 4.4 de ese repositorio exige que nada se
+  escriba junto a las fuentes y que los intermedios se borren al terminar cada
+  build. latexmk hace justo lo contrario: conserva `.fdb_latexmk` y los
+  auxiliares para poder compilar incremental.
 
-Las tareas de `space l ...` son la salida de emergencia — recompilar entero, ver
-el log, limpiar auxiliares — no el camino normal.
+Asi que `build.onSave` queda en **`false`** y el trabajo lo hacen las tareas:
+
+| Tecla | Que hace |
+|---|---|
+| `space l b` | busca un `Makefile` subiendo desde el `.tex` y lo usa; sin Makefile, latexmk |
+| `space l v` | abre el PDF en la linea del cursor, y dejando armada la vuelta |
+
+`space l v` no pasa por texlab: llama a zathura con `--synctex-forward` usando
+`$ZED_ROW` y `$ZED_COLUMN`, y su `-x` deja montada la busqueda inversa. Busca el
+PDF en `build/` antes que junto al fuente, y sube un nivel para que
+`letters/cover-letter.tex` encuentre `../build/cover-letter.pdf`. Comprobado con
+los tres casos reales del paper de INFEDU.
+
+`autosave` esta en `"off"` de todas formas: si algun proyecto enciende
+`build.onSave`, el autoguardado convertiria cada pausa al teclear en una
+compilacion.
+
+**Para un `.tex` suelto**, sin Makefile ni TEXINPUTS, compilar al guardar si es
+comodo. Eso se enciende en el `.zed/settings.json` de ese proyecto:
+
+```json
+{ "lsp": { "texlab": { "settings": { "texlab": {
+  "build": { "onSave": true, "forwardSearchAfter": true }
+} } } } }
+```
+
+Ahi si entra en juego el bloque `forwardSearch` de `settings.json`.
 
 ### `latexmk` no estaba instalado, y es el compilador por defecto
 

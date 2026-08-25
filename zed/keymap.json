@@ -69,7 +69,7 @@
       ],
       "space l v": [
         "task::Spawn",
-        { "task_name": "LaTeX: abrir el PDF", "reveal_target": "dock" }
+        { "task_name": "LaTeX: ver el PDF en esta linea", "reveal_target": "dock" }
       ],
       "space l c": [
         "task::Spawn",

@@ -218,13 +218,19 @@ job. Measured on Zed 1.16.2, LaTeX extension 0.2.3, texlab 5.26.0. Five separate
 things were configured and doing nothing; `zed/README.md` has the evidence for
 each. The ones worth knowing before touching anything:
 
-- **Saving is the only way to compile.** texlab exposes build and forward-search
-  as LSP *commands*, and Zed cannot invoke an arbitrary LSP command — no action,
-  no palette entry, and the extension declares `capabilities = []`. So
-  `build.onSave: false`, which is what the file had, means there is **no way to
-  compile from the editor at all**. It is now `true`, with
-  `forwardSearchAfter: true`, and `autosave` is pinned `"off"` so typing pauses
-  do not trigger builds.
+- **texlab cannot compile here, so tasks do it.** texlab exposes build and
+  forward-search as LSP *commands*, and Zed cannot invoke an arbitrary LSP
+  command — no action, no palette entry, and the extension declares
+  `capabilities = []`. Its only trigger is **saving**, and enabling that is wrong
+  for the paper workspace on two measured counts: those papers resolve
+  `infedu.cls` through `TEXINPUTS` (`env -u TEXINPUTS kpsewhich infedu.cls`
+  finds nothing, so every save would fail), and `papers-project`'s own rule §4.4
+  forbids writing beside the sources and requires intermediates to be scrubbed —
+  the opposite of what latexmk does to build incrementally. So `build.onSave`
+  stays `false`; `space l b` walks up for a `Makefile` and uses it, and
+  `space l v` calls zathura's `--synctex-forward` directly with `$ZED_ROW`.
+  A single-file `.tex` project can opt into build-on-save in its own
+  `.zed/settings.json`. `autosave` is pinned `"off"` for that case.
 - **`latexmk` is the default compiler and was not installed.** The extension
   fills in `build.executable = "latexmk"` when you omit it; on Arch it lives in
   `texlive-binextra`, which none of the twelve installed texlive packages

@@ -111,13 +111,35 @@
           // rellena entonces su propio preajuste de latexmk, que respeta el
           // .latexmkrc del proyecto (para xelatex, $pdf_mode = 5). Fijar
           // aqui "latexmk -pdf" pisaria ese archivo y forzaria pdflatex.
+          // Compilar al guardar queda APAGADO, y no por gusto.
+          //
+          // Guardar es el unico disparador de compilacion que texlab ofrece a
+          // Zed, asi que encenderlo es la unica forma de que texlab compile.
+          // Pero lo hace con latexmk, en la carpeta del .tex, y eso choca de
+          // frente con como esta montado ~/repositorios/work/papers-project:
+          //
+          //   - Sus papers resuelven la clase (infedu.cls) por TEXINPUTS desde
+          //     template/. Sin esa variable, latexmk no encuentra la clase y
+          //     falla en CADA guardado. Comprobado con kpsewhich.
+          //   - Su regla 4.4 exige que nada se escriba junto a las fuentes y
+          //     que los intermedios se borren al terminar cada build. latexmk
+          //     hace lo contrario: deja .fdb_latexmk y auxiliares para poder
+          //     compilar incremental.
+          //
+          // Asi que la compilacion va por las tareas de "space l b", que usan
+          // el Makefile del paper cuando lo hay. Y la busqueda directa la hace
+          // "space l v" llamando a zathura por su cuenta, sin pasar por texlab.
+          //
+          // Para un .tex suelto, sin Makefile, encender esto es comodo: se
+          // pone a true en el .zed/settings.json de ese proyecto, no aqui.
           "build": {
-            // Zed no tiene forma de invocar los comandos LSP de texlab, asi
-            // que guardar es el UNICO disparador de compilacion que existe.
-            // Con onSave en false no hay manera de compilar desde el editor.
-            "onSave": true,
-            "forwardSearchAfter": true
+            "onSave": false,
+            "forwardSearchAfter": false
           },
+          // Solo entra en juego si algun proyecto enciende build.onSave en su
+          // .zed/settings.json; con onSave apagado, quien abre el PDF es la
+          // tarea "LaTeX: ver el PDF en esta linea".
+          //
           // Puesto a mano en vez de dejar que la extension lo detecte: su
           // deteccion prueba evince ANTES que zathura, y evince gana siempre
           // aqui aunque zathura este instalado. Ver zed/README.md.

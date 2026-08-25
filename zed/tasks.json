@@ -6,45 +6,47 @@
 // avisa. Los nombres de aqui y los del keymap tienen que coincidir letra a
 // letra.
 //
-// Variables disponibles: $ZED_FILE, $ZED_DIRNAME, $ZED_WORKTREE_ROOT,
-// $ZED_ROW, $ZED_COLUMN.
+// Variables: $ZED_FILE, $ZED_DIRNAME, $ZED_STEM, $ZED_FILENAME, $ZED_ROW,
+// $ZED_COLUMN, $ZED_WORKTREE_ROOT. Tambien admiten valor por defecto con
+// ${ZED_LOQUESEA:valor}.
 [
   // ─── LaTeX ──────────────────────────────────────────────────────────────
-  // Lo normal es no usar esto: texlab compila al guardar y salta al PDF solo.
-  // Esto es la salida de emergencia — recompilar entero, ver el log, limpiar.
+  // texlab NO compila al guardar (el porque, largo, esta en settings.json).
+  // Compilar y ver el PDF se hace desde aqui, que es lo unico que respeta el
+  // Makefile de cada paper.
   {
-    // El truco del -e es el mismo que usa la extension: pone pdflatex salvo
-    // que el proyecto traiga un .latexmkrc que ya haya elegido otra cosa
-    // (por ejemplo $pdf_mode = 5 para xelatex). Un "-pdf" pelado pisaria ese
-    // archivo sin decir nada.
+    // Busca un Makefile subiendo desde la carpeta del .tex y lo usa. Es lo que
+    // manda en ~/repositorios/work/papers-project: sus papers resuelven la
+    // clase por TEXINPUTS y borran los intermedios al terminar, dos cosas que
+    // un latexmk suelto no haria. Sin Makefile, cae a latexmk.
     "label": "LaTeX: compilar",
-    "command": "latexmk -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 -f \"$ZED_FILE\"",
-    "cwd": "$ZED_DIRNAME",
+    "command": "d=\"$ZED_DIRNAME\"; while [ \"$d\" != \"/\" ] && [ ! -f \"$d/Makefile\" ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/Makefile\" ]; then echo \"make en $d\"; cd \"$d\" && make; else echo 'sin Makefile: latexmk'; cd \"$ZED_DIRNAME\" && latexmk -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 -f \"$ZED_FILE\"; fi",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "no_focus"
   },
   {
-    "label": "LaTeX: compilar en continuo",
-    "command": "latexmk -pvc -view=none -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 \"$ZED_FILE\"",
-    "cwd": "$ZED_DIRNAME",
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  },
-  {
-    "label": "LaTeX: abrir el PDF",
-    "command": "zathura \"${ZED_FILE%.tex}.pdf\" &",
-    "cwd": "$ZED_DIRNAME",
+    // Busqueda directa: abre el PDF en la linea donde esta el cursor. El -x
+    // deja armada la inversa, de modo que un clic en el PDF vuelve a Zed.
+    // El PDF se busca en build/ (convencion de los papers) antes que al lado
+    // del fuente; para letters/*.tex el build/ esta un nivel mas arriba.
+    "label": "LaTeX: ver el PDF en esta linea",
+    "command": "p=''; for c in \"$ZED_DIRNAME/build/$ZED_STEM.pdf\" \"$ZED_DIRNAME/../build/$ZED_STEM.pdf\" \"$ZED_DIRNAME/$ZED_STEM.pdf\"; do if [ -f \"$c\" ]; then p=\"$c\"; break; fi; done; if [ -z \"$p\" ]; then echo \"no encuentro el PDF de $ZED_STEM -- compila primero con space l b\"; exit 1; fi; echo \"abriendo $p\"; zathura --synctex-forward \"$ZED_ROW:$ZED_COLUMN:$ZED_FILE\" -x \"zeditor %{input}:%{line}\" \"$p\" >/dev/null 2>&1 &",
     "use_new_terminal": false,
     "allow_concurrent_runs": true,
     "reveal": "no_focus"
   },
   {
-    // -c borra los auxiliares y deja el PDF; -C se llevaria tambien el PDF.
+    // Solo para un .tex suelto: con Makefile, `make` ya es incremental.
+    "label": "LaTeX: compilar en continuo",
+    "command": "cd \"$ZED_DIRNAME\" && latexmk -pvc -view=none -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 \"$ZED_FILE\"",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
     "label": "LaTeX: limpiar auxiliares",
-    "command": "latexmk -c \"$ZED_FILE\"",
-    "cwd": "$ZED_DIRNAME",
+    "command": "d=\"$ZED_DIRNAME\"; while [ \"$d\" != \"/\" ] && [ ! -f \"$d/Makefile\" ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/Makefile\" ]; then cd \"$d\" && make clean; else cd \"$ZED_DIRNAME\" && latexmk -c \"$ZED_FILE\"; fi",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always"
