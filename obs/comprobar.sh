@@ -39,7 +39,7 @@ echo
 echo "== Camino 1: PipeWire (compartir de verdad, sin root) =="
 nodo="$(wpctl status 2>/dev/null | sed -n '/^Video/,/^Settings/p' \
         | sed -n '/Sources:/,/Filters:/p' | grep -oE '^ *[|│ ]*\*? *[0-9]+\.' \
-        | tr -dc '0-9\n' | head -1)"
+        | tr -dc '0-9\n' | sed -n '1p')"
 if [[ -n "${nodo:-}" ]]; then
   ok "PipeWire expone la camara como Video/Source (nodo $nodo)"
   info "eso es lo que permite que varios programas la lean a la vez"
@@ -56,7 +56,7 @@ fi
 
 if busctl --user get-property org.freedesktop.portal.Desktop \
      /org/freedesktop/portal/desktop org.freedesktop.portal.Camera \
-     IsCameraPresent 2>/dev/null | grep -q true; then
+     IsCameraPresent 2>/dev/null | grep true >/dev/null; then
   ok "el portal de camara (xdg-desktop-portal) ve una camara"
 else
   no "el portal de camara no responde; el navegador no podra pedirla por ahi"
@@ -128,7 +128,12 @@ if pacman -Q v4l2loopback-dkms &>/dev/null; then
 else
   no "falta v4l2loopback-dkms  ->  ./install.sh"
 fi
-if lsmod | grep -q '^v4l2loopback'; then
+# Nota sobre los grep de aqui: van sin -q a proposito. Con -q, grep cierra la
+# tuberia en la primera coincidencia, quien escribe muere con SIGPIPE (141) y el
+# `set -o pipefail` de arriba lo convierte en fallo. Medido: `lsmod | grep -q
+# '^snd'`, con un modulo que SI esta cargado, devuelve 141. O sea que la
+# comprobacion daba "no cargado" justo cuando si lo estaba.
+if lsmod | grep '^v4l2loopback' >/dev/null; then
   ok "modulo cargado"
 else
   no "modulo no cargado  ->  ./install.sh"

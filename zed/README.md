@@ -372,26 +372,67 @@ Estaba en el archivo y no hacia nada. Zed solo conoce `agent_ui_font_size` y
 `agent_buffer_font_size` — comprobado contra su `default.json` y contra el
 binario, cero apariciones de la otra.
 
-## La fuente falla en silencio
+## La fuente fallaba en silencio
 
-`ui_font_family` y `buffer_font_family` piden **IosevkaTerm Nerd Font**, que no
-esta instalada: `fc-list` no devuelve ni una familia Iosevka, y `fc-match`
-resuelve a Noto Sans. Zed lleva todo este tiempo pintando con otra fuente sin
-decirlo. `install.sh` lo comprueba.
+`ui_font_family` y `buffer_font_family` piden **IosevkaTerm Nerd Font**. No
+estaba instalada: `fc-list` no devolvia ni una familia Iosevka y `fc-match`
+resolvia a Noto Sans, asi que Zed llevaba meses pintando con otra sin decirlo —
+que es como falla una fuente que falta, sin ningun aviso. Ya esta puesta
+(`ttf-iosevkaterm-nerd`), y `install.sh` lo comprueba en cada ejecucion.
 
 ## Lo que hay que instalar
 
+La lista vive en **`paquetes.txt`**, no en el README ni dentro del script, para
+que anadir una tarea que llame a un programa nuevo sea una fila y no un cambio
+de codigo. `install.sh` la lee para las dos cosas: comprobar que hay y construir
+la orden de pacman.
+
+En una maquina nueva:
+
 ```bash
-sudo pacman -S --needed texlive-binextra zathura zathura-pdf-mupdf \
-                        ttf-iosevkaterm-nerd lazygit mermaid-cli
+./install.sh --paquetes       # imprime la orden con todo lo que espera
+./install.sh                  # enlaza, y avisa de lo que siga faltando
 ```
 
-- `texlive-binextra` → `latexmk` (compilar), `texcount` (contar palabras).
-  Tambien trae `latexindent`, por si algun dia se quiere formatear.
-- `zathura` + `zathura-pdf-mupdf` → visor con synctex en las dos direcciones.
-- `ttf-iosevkaterm-nerd` → la fuente que la configuracion ya pedia.
-- `lazygit` → la tarea de `space g g`.
-- `mermaid-cli` → `mmdc`, que es lo que rasteriza los diagramas en `space m d`.
-  Para *verlos* en Zed no hace falta: eso lo hace el editor por su cuenta.
+Hoy son estos, todos en `extra`, ninguno del AUR:
 
-`pandoc` ya esta instalado, asi que `space m f` funciona desde ya.
+| Paquete | Para |
+|---|---|
+| `zed` | el editor, y el CLI `zeditor` de la busqueda inversa |
+| `texlive-binextra` | `latexmk` (compilar) y `texcount` (contar palabras) |
+| `texlive-bin` | `chktex`, los avisos dentro del editor |
+| `zathura` + `zathura-pdf-mupdf` | ver el PDF con synctex en las dos direcciones |
+| `ttf-iosevkaterm-nerd` | la fuente que pide `settings.json` |
+| `pandoc-cli` | formulas en Markdown |
+| `mermaid-cli` | rasterizar mermaid en el PDF de la carpeta |
+| `lazygit` | la tarea de `space g g` |
+
+**Dos nombres que no coinciden con su binario**, y que cuestan un rato si se
+copian mal: el paquete de `pandoc` es **`pandoc-cli`**, y **`chktex` no es un
+paquete** — llega dentro de `texlive-bin`. Ninguno de los dos existe como
+`pacman -S pandoc` ni `pacman -S chktex`.
+
+Para *ver* mermaid en Zed no hace falta `mermaid-cli`: eso lo dibuja el editor
+por su cuenta. El paquete solo hace falta para el PDF de `space m d`.
+
+### La comprobacion de la fuente decia que faltaba estando instalada
+
+Merece la pena por lo que ensena. `install.sh` corre con `set -euo pipefail`, y
+la comprobacion era:
+
+```bash
+fc-list : family | grep -qi 'IosevkaTerm Nerd Font'
+```
+
+`grep -q` sale en cuanto encuentra la primera coincidencia y cierra la tuberia.
+`fc-list`, que suelta 100 KB, sigue escribiendo, recibe **SIGPIPE** y termina en
+141. Con `pipefail`, el codigo de la tuberia es ese 141, asi que el `if` se iba
+al `else` y el script anunciaba que faltaba una fuente que estaba puesta.
+
+El tamano de la salida no protege, aunque lo parezca: medido, `lsmod | grep -q
+'^snd'` tambien devuelve 141 con solo 6 KB, porque lo que importa es si quien
+escribe sigue escribiendo cuando el lector se va. La solucion es `grep` **sin**
+`-q`, redirigiendo a `/dev/null`: asi lee toda la entrada y no hay senal.
+
+Un `grep -q` que lee un **archivo** o un here-string no tiene este problema,
+porque no hay tuberia. Solo los de tuberia.

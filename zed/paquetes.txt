@@ -1,0 +1,33 @@
+# Paquetes de Arch que esta configuracion da por hechos.
+#
+# Este archivo es la unica fuente: install.sh lo lee para comprobar que hay y
+# para construir la orden de pacman. Si se anade una tarea que llame a un
+# programa nuevo, la fila va aqui y el instalador se entera solo.
+#
+# Ninguno lo instala install.sh por su cuenta: hace falta root, y en este repo
+# eso se pide explicitamente.
+#
+#   ./install.sh              enlaza y dice que falta
+#   ./install.sh --paquetes   imprime la orden de pacman con lo que falte
+#
+# Formato:  paquete | como comprobarlo | para que sirve
+#
+# En la segunda columna:
+#   un nombre suelto   -> se busca ese binario en el PATH
+#   @font:Nombre       -> se busca esa familia en fontconfig
+#   vacio              -> no se comprueba (es dependencia de otro)
+#
+# Todos estan en los repos oficiales (extra); ninguno viene del AUR.
+# Ojo con dos nombres que no coinciden con su binario: el de pandoc es
+# pandoc-cli, y chktex no es un paquete — llega dentro de texlive-bin.
+
+zed|zeditor|el editor, y su CLI para la busqueda inversa desde el PDF
+texlive-binextra|latexmk|compilar un .tex sin Makefile (space l b)
+texlive-binextra|texcount|la tarea "LaTeX: contar palabras" (space l n)
+texlive-bin|chktex|los avisos de LaTeX dentro del editor
+zathura|zathura|ver el PDF en la linea del cursor (space l v)
+zathura-pdf-mupdf||el motor con el que zathura abre PDFs; sin el, no abre nada
+ttf-iosevkaterm-nerd|@font:IosevkaTerm Nerd Font|la fuente que pide settings.json
+pandoc-cli|pandoc|formulas en Markdown (space m f)
+mermaid-cli|mmdc|rasterizar mermaid en el PDF de la carpeta (space m d)
+lazygit|lazygit|la tarea "Lazygit" (space g g)

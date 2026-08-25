@@ -470,6 +470,35 @@ editing the repo changes nothing until it is copied to
 
 Scripts use `set -euo pipefail`. Keep that pattern when adding new scripts.
 
+### `pipefail` plus `grep -q` in a pipeline is a false negative
+
+This bit twice in one session and reads as "the thing isn't installed" when it
+is. `grep -q` exits at the first match and closes the pipe; whoever is still
+writing gets **SIGPIPE** and ends in 141; `pipefail` makes that the pipeline's
+status, so the `if` takes the `else` branch.
+
+`zed/install.sh` announced that IosevkaTerm Nerd Font was missing while
+`fc-list` listed it. Output size does not protect you, though it looks like it
+should: measured, `lsmod | grep -q '^snd'` also returns 141 on 6 KB, because what
+matters is whether the writer is still writing when the reader leaves. The same
+defect was latent in `obs/install.sh` and `obs/comprobar.sh`, where
+`lsmod | grep -q '^v4l2loopback'` would have reported the module unloaded exactly
+when it was loaded — never noticed because v4l2loopback is installed on neither
+machine.
+
+Write `grep 'patrón' >/dev/null` instead, which reads the whole input. Use
+`sed -n '1p'` rather than `head -1` for the same reason. A `grep -q` reading a
+**file** or a here-string is fine — there is no pipe.
+
+### Package lists belong in a file, not in the script
+
+`zed/paquetes.txt` is the one source: `zed/install.sh` reads it both to report
+what is missing and to build the `pacman` line (`./install.sh --paquetes`).
+Adding a task that shells out to a new program is then one row, not a code
+change. Two names there are worth remembering because they do not match their
+binary: pandoc's package is **`pandoc-cli`**, and **`chktex` is not a package**
+at all — it arrives inside `texlive-bin`.
+
 ## Adding new tool configs
 
 Every tool lives in a subdirectory named after it and carries its own

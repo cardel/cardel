@@ -55,7 +55,12 @@ copiar "$SRC_DIR/etc/modules-load.d/v4l2loopback.conf" /etc/modules-load.d/v4l2l
 # --- cargar ahora, sin reiniciar ------------------------------------------
 # Si ya estaba cargado con otros parametros hay que recargarlo: modprobe no
 # reaplica las opciones sobre un modulo que ya esta dentro del kernel.
-if lsmod | grep -q '^v4l2loopback'; then
+# Nota sobre los grep de aqui: van sin -q a proposito. Con -q, grep cierra la
+# tuberia en la primera coincidencia, quien escribe muere con SIGPIPE (141) y el
+# `set -o pipefail` de arriba lo convierte en fallo. Medido: `lsmod | grep -q
+# '^snd'`, con un modulo que SI esta cargado, devuelve 141. O sea que la
+# comprobacion daba "no cargado" justo cuando si lo estaba.
+if lsmod | grep '^v4l2loopback' >/dev/null; then
   if fuser -s "/dev/video$VIDEO_NR" 2>/dev/null; then
     echo "aviso: /dev/video$VIDEO_NR esta en uso; cierra OBS y el navegador y" >&2
     echo "       vuelve a lanzar este script para recargar el modulo" >&2
