@@ -26,6 +26,7 @@ declare -A INSTALADORES=(
   [hypr]="hypr/install.sh"
   [zsh]="config/oh-my-zsh/install.sh"
   [obs]="obs/install.sh"
+  [zed]="zed/install.sh"
 )
 
 # Fuera de --all: requieren una decision antes de sobrescribir, o sudo.
@@ -42,6 +43,7 @@ declare -A DESTINOS=(
   [hypr]="$CONF/hypr/user_configs/overrides.conf"
   [zsh]="$HOME/.zshrc"
   [obs]="/etc/modprobe.d/v4l2loopback.conf"
+  [zed]="$CONF/zed/settings.json"
 )
 
 # Herramientas que se instalan copiando en vez de enlazando. Para estas, "no es

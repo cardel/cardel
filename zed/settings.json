@@ -1,29 +1,71 @@
-// Zed settings
+// Zed — configuracion. El porque de cada bloque esta en zed/README.md.
 //
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
-//
-// To see all of Zed's default settings without changing your
-// custom settings, run `zed: open default settings` from the
-// command palette (cmd-shift-p / ctrl-shift-p)
-
+// Los ajustes por defecto se ven con `zed: open default settings` desde la
+// paleta de ordenes (ctrl-shift-p). Este archivo solo lleva lo que difiere.
 {
-  "toolbar": {
-    "quick_actions": false
+  // ─── Extensiones ──────────────────────────────────────────────────────
+  // Zed instala solas las que falten al arrancar. Esta lista es lo que hace
+  // reproducible una maquina nueva: sin ella un clon se queda sin texlab y
+  // sin corrector, y el bloque "lsp" de mas abajo no aplica a nada.
+  "auto_install_extensions": {
+    "latex": true,
+    "ltex": true,
+    "dockerfile": true,
+    "html": true,
+    "log": true
   },
-  "show_edit_predictions": true,
-  "features": {
-    "edit_prediction_provider": "copilot"
+
+  // ─── Paneles ──────────────────────────────────────────────────────────
+  "toolbar": { "quick_actions": false },
+  "project_panel": { "dock": "left", "indent_size": 12 },
+  "outline_panel": { "dock": "left" },
+  "collaboration_panel": { "dock": "left" },
+  "git_panel": { "dock": "left" },
+
+  // ─── Vim ──────────────────────────────────────────────────────────────
+  "vim_mode": true,
+  "vim": {
+    "toggle_relative_line_numbers": true,
+    "use_smartcase_find": true,
+    "highlight_on_yank_duration": 150
   },
+  "use_smartcase_search": true,
+  // Sin autoguardado: mas abajo el guardar dispara la compilacion de LaTeX,
+  // y con autosave se compilaria en cada pausa de tecleo.
+  "autosave": "off",
+
+  // ─── Tipografia y tema ────────────────────────────────────────────────
+  "ui_font_size": 16,
+  "buffer_font_size": 16,
+  // No existe "agent_font_size" — Zed solo conoce estas dos. La otra llevaba
+  // tiempo en el archivo sin hacer nada.
+  "agent_ui_font_size": 16,
+  "agent_buffer_font_size": 16,
+  "ui_font_family": "IosevkaTerm Nerd Font",
+  "buffer_font_family": "IosevkaTerm Nerd Font",
+  "theme": {
+    "mode": "dark",
+    "light": "Kanagawa Lotus",
+    "dark": "Gentleman Kanagawa Blur"
+  },
+
   "terminal": {
     "shell": "system",
     "line_height": { "custom": 1.25 }
   },
-  "project_panel": {
-    "dock": "left",
-    "indent_size": 12
+
+  "diagnostics": {
+    "inline": { "enabled": true }
+  },
+  "soft_wrap": "editor_width",
+
+  // ─── Copilot ──────────────────────────────────────────────────────────
+  "show_edit_predictions": true,
+  "features": {
+    "edit_prediction_provider": "copilot"
   },
   "agent": {
+    "dock": "right",
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "gpt-4.1"
@@ -35,42 +77,91 @@
     },
     "version": "2"
   },
-  "vim_mode": true,
-  "vim": {
-    "toggle_relative_line_numbers": true
-  },
-  "ui_font_size": 16,
-  "buffer_font_size": 16,
-  "agent_font_size": 16,
-  "ui_font_family": "IosevkaTerm Nerd Font",
-  "buffer_font_family": "IosevkaTerm Nerd Font",
-  "theme": {
-    "mode": "dark",
-    "light": "Kanagawa Lotus",
-    "dark": "Gentleman Kanagawa Blur"
-  },
-  "diagnostics": {
-    "inline": {
-      "enabled": true
+
+  // ─── Ajustes por lenguaje ─────────────────────────────────────────────
+  "languages": {
+    "LaTeX": {
+      "soft_wrap": "editor_width",
+      "tab_size": 2,
+      "preferred_line_length": 100,
+      // latexindent no esta instalado; formatear al guardar seria un error
+      // silencioso en cada guardado, que ademas dispara la compilacion.
+      "format_on_save": "off"
+    },
+    "BibTeX": {
+      "tab_size": 2,
+      "format_on_save": "off"
+    },
+    "Markdown": {
+      "soft_wrap": "editor_width",
+      "format_on_save": "off"
     }
   },
+
+  // ─── Servidores de lenguaje ───────────────────────────────────────────
   "lsp": {
-    "ltex": {
-      "settings": {
-        "ltex": {
-          "language": "es"
-        }
-      }
-    },
     "texlab": {
       "settings": {
         "texlab": {
+          // build.executable se deja SIN poner a proposito. La extension
+          // rellena entonces su propio preajuste de latexmk, que respeta el
+          // .latexmkrc del proyecto (para xelatex, $pdf_mode = 5). Fijar
+          // aqui "latexmk -pdf" pisaria ese archivo y forzaria pdflatex.
           "build": {
-            "onSave": false
+            // Zed no tiene forma de invocar los comandos LSP de texlab, asi
+            // que guardar es el UNICO disparador de compilacion que existe.
+            // Con onSave en false no hay manera de compilar desde el editor.
+            "onSave": true,
+            "forwardSearchAfter": true
+          },
+          // Puesto a mano en vez de dejar que la extension lo detecte: su
+          // deteccion prueba evince ANTES que zathura, y evince gana siempre
+          // aqui aunque zathura este instalado. Ver zed/README.md.
+          //   %f fichero fuente   %l linea   %p pdf   %% un % literal
+          "forwardSearch": {
+            "executable": "zathura",
+            "args": [
+              "--synctex-forward",
+              "%l:1:%f",
+              "-x",
+              "zeditor %%{input}:%%{line}",
+              "%p"
+            ]
+          },
+          // texlab trae chktex desactivado de fabrica. onEdit lo lanza en
+          // cada pulsacion, que en un documento largo se nota; con abrir y
+          // guardar basta.
+          "chktex": {
+            "onOpenAndSave": true,
+            "onEdit": false
+          }
+        }
+      }
+    },
+    "ltex": {
+      "settings": {
+        "ltex": {
+          // Corrector gramatical. Para un documento en ingles no hay que
+          // tocar nada aqui: basta una linea magica en el propio .tex,
+          //   % LTeX: language=en-US
+          "language": "es",
+          "additionalRules": {
+            "motherTongue": "es"
+          },
+          // Palabras que LanguageTool no conoce. Crece a mano: Zed no puede
+          // escribir la accion rapida de "anadir al diccionario".
+          "dictionary": {
+            "es": [
+              "Hyprland",
+              "Wayland",
+              "Arch",
+              "framework",
+              "software",
+              "hardware"
+            ]
           }
         }
       }
     }
-  },
-  "soft_wrap": "editor_width"
+  }
 }

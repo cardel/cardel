@@ -15,7 +15,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | `config/oh-my-zsh/` | Zsh + Oh My Zsh |
 | `config/i3/` | i3 window manager (X11 fallback) |
 | `hypr/` | Hyprland compositor overrides |
-| `zed/` | Zed editor (settings, keymap, themes) |
+| `zed/` | Zed editor (settings, keymap, tasks, debug, themes) |
 | `nvim/` | Neovim / LazyVim (config, plugins, `yamllint/config`) |
 | `yazi/` | Yazi file manager |
 | `pdfgithub/` | Markdown → PDF pipeline (pandoc + XeLaTeX + mermaid) |
@@ -133,8 +133,10 @@ Language-server traps found by measurement, each one silent:
 
 - **jdtls needs Java 21+ to *run*.** mason's launcher (`bin/jdtls.py`,
   `get_java_executable`) reads `JAVA_HOME` then `java` on PATH and aborts with
-  `requires at least Java 21`. The system default here is 17, so it died every
-  time. `java.lua` passes `--java-executable` instead of touching anything
+  `requires at least Java 21`. The system default was 17 when this was found, so
+  it died every time; as of 2026-08-25 `archlinux-java status` reports 21 as the
+  default, but the flag stays because the default is not ours to depend on.
+  `java.lua` passes `--java-executable` instead of touching anything
   global — changing the default with `archlinux-java` or exporting `JAVA_HOME`
   would also change what Gradle, Maven and students' terminal builds use. Note
   this is a *different* setting from `configuration.runtimes`, which picks the
@@ -208,6 +210,70 @@ from bad reasoning. These are the traps, each one found the hard way:
 
 The general rule: when a probe says something is broken, first prove the probe
 can see something that is known to work.
+
+### Zed is the LaTeX editor, and most of its config was inert (`zed/`)
+
+Zed here is for **writing LaTeX in Spanish**, not for code — that is Neovim's
+job. Measured on Zed 1.16.2, LaTeX extension 0.2.3, texlab 5.26.0. Five separate
+things were configured and doing nothing; `zed/README.md` has the evidence for
+each. The ones worth knowing before touching anything:
+
+- **Saving is the only way to compile.** texlab exposes build and forward-search
+  as LSP *commands*, and Zed cannot invoke an arbitrary LSP command — no action,
+  no palette entry, and the extension declares `capabilities = []`. So
+  `build.onSave: false`, which is what the file had, means there is **no way to
+  compile from the editor at all**. It is now `true`, with
+  `forwardSearchAfter: true`, and `autosave` is pinned `"off"` so typing pauses
+  do not trigger builds.
+- **`latexmk` is the default compiler and was not installed.** The extension
+  fills in `build.executable = "latexmk"` when you omit it; on Arch it lives in
+  `texlive-binextra`, which none of the twelve installed texlive packages
+  provide. Leave `build.executable` unset on purpose — the extension's preset
+  passes `-e '$pdf_mode = 1 unless $pdf_mode != 0;'`, which respects a project's
+  `.latexmkrc` (`$pdf_mode = 5` for XeLaTeX). A bare `-pdf` would override it.
+- **The PDF viewer must be set by hand, because evince wins the auto-detection.**
+  `preview_presets.rs::determine` tries evince *before* zathura, sioyek, okular
+  and qpdfview, so installing zathura changes nothing while evince is present —
+  the extension even downloaded `evince_synctex.py` back in April. The escape is
+  that it never overrides a user-supplied `forwardSearch`, so `settings.json`
+  pins zathura. In those args `%%` is deliberate: texlab collapses it to a
+  literal `%` (its own unit test asserts `"%%f"` → `"%f"`), which is what
+  zathura's `%{input}` needs. And inverse search must call **`zeditor`**, the
+  Arch binary name — there is no `zed` on this machine.
+- **chktex ships disabled in texlab**, exactly as in Neovim, while `chktex` sat
+  in `/usr/bin`. Note `chktex` is a **top-level** texlab key, not a child of
+  `diagnostics`. Enabled `onOpenAndSave`, not `onEdit`.
+- **`agent_font_size` is not a Zed setting.** Zed only knows
+  `agent_ui_font_size` and `agent_buffer_font_size`.
+
+Two more, about the keymap:
+
+- **`tasks.json` did not exist**, so all six `task::Spawn` bindings — yazi,
+  lazygit, and the three fzf ones — were dead. A `task::Spawn` naming a
+  non-existent task fails silently.
+- **A prefix and a longer sequence cannot share a key.** `space g` sat next to
+  `space g g`, and `space o` next to `space o s`.
+
+Do **not** re-bind LSP navigation. Zed's stock vim keymap already follows modern
+nvim conventions (`K`, `g d`, `g y`, `g I`, `g r r`, `g r n`, `g r a`, `] d`,
+`] c`, `g O`). Before adding any binding, check that the action actually exists —
+`grep -ac 'editor::Whatever' /usr/lib/zed/zed-editor` — because an invalid action
+name produces no error, just a key that does nothing. That is how
+`editor::GoToPrevHunk` (correct name: `editor::GoToPreviousHunk`) was caught in
+the reference config that prompted this work.
+
+**Unlike every other GUI app in this repo, Zed's `settings.json` is safe to
+symlink.** Zed rewrites it whenever a setting is changed in the UI, but it calls
+`canonicalize()` before `atomic_write()`
+(`crates/settings/src/settings_store.rs`), so the write lands on the repo file
+and the link survives. That is the opposite of Firefox's `prefs.js`. The upshot
+is that UI-made changes show up in `git status` instead of drifting — which is
+how the previous copy was found to be months out of date.
+
+The fastest way to check a change: `~/.local/share/zed/logs/Zed.log` reports
+rejected values by name while Zed is running. It is what caught
+`reveal: "on_error"` in `tasks.json` (the valid variants are `always`,
+`no_focus`, `never`).
 
 ### Sharing the webcam and mic between OBS, browsers and Zoom (`obs/`)
 
@@ -378,4 +444,8 @@ Makefiles need `bear -- make`.
 
 ## Language / locale
 
-Zed's LSP spell-checking (`ltex`) is configured for **Spanish** (`es`). This is intentional.
+Zed's LSP spell-checking (`ltex`) is configured for **Spanish** (`es`). This is
+intentional — see `zed/README.md` for the magic comment that switches a single
+document to English. Until 2026-08-25 that configuration had **never run**,
+because the extension providing the server was not installed; it is now declared
+in `auto_install_extensions`.

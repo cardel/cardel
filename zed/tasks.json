@@ -1,0 +1,116 @@
+// Zed — tareas globales. Se lanzan con "space l ...", "space f ...", "-" y
+// "space g g" (ver keymap.json), o con la paleta: `task: spawn`.
+//
+// Este archivo faltaba por completo, y con el faltaban las seis tareas que el
+// keymap ya invocaba: un task::Spawn cuyo task_name no existe no hace nada ni
+// avisa. Los nombres de aqui y los del keymap tienen que coincidir letra a
+// letra.
+//
+// Variables disponibles: $ZED_FILE, $ZED_DIRNAME, $ZED_WORKTREE_ROOT,
+// $ZED_ROW, $ZED_COLUMN.
+[
+  // ─── LaTeX ──────────────────────────────────────────────────────────────
+  // Lo normal es no usar esto: texlab compila al guardar y salta al PDF solo.
+  // Esto es la salida de emergencia — recompilar entero, ver el log, limpiar.
+  {
+    // El truco del -e es el mismo que usa la extension: pone pdflatex salvo
+    // que el proyecto traiga un .latexmkrc que ya haya elegido otra cosa
+    // (por ejemplo $pdf_mode = 5 para xelatex). Un "-pdf" pelado pisaria ese
+    // archivo sin decir nada.
+    "label": "LaTeX: compilar",
+    "command": "latexmk -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 -f \"$ZED_FILE\"",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "no_focus"
+  },
+  {
+    "label": "LaTeX: compilar en continuo",
+    "command": "latexmk -pvc -view=none -e '$pdf_mode = 1 unless $pdf_mode != 0;' -interaction=nonstopmode -synctex=1 \"$ZED_FILE\"",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "LaTeX: abrir el PDF",
+    "command": "zathura \"${ZED_FILE%.tex}.pdf\" &",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "no_focus"
+  },
+  {
+    // -c borra los auxiliares y deja el PDF; -C se llevaria tambien el PDF.
+    "label": "LaTeX: limpiar auxiliares",
+    "command": "latexmk -c \"$ZED_FILE\"",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "LaTeX: contar palabras",
+    "command": "texcount -inc -sum -brief \"$ZED_FILE\"",
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "always"
+  },
+
+  // ─── Navegacion ─────────────────────────────────────────────────────────
+  {
+    "label": "Yazi",
+    // EDITOR se fija aqui para que abrir un archivo desde yazi vuelva a Zed
+    // y no arranque un nvim dentro del panel.
+    "command": "EDITOR=zeditor yazi \"$ZED_WORKTREE_ROOT\"",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "File Finder",
+    "command": "f=$(fd --type f --hidden --exclude .git | fzf --preview 'bat --color=always --style=numbers {}') && [ -n \"$f\" ] && zeditor \"$f\"",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Find Directories",
+    "command": "d=$(fd --type d --hidden --exclude .git | fzf --preview 'ls -la {}') && [ -n \"$d\" ] && zeditor \"$d\"",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    // rg + fzf en vivo: cada tecla relanza la busqueda. El {1} y {2} salen de
+    // los campos que separa el ':' en la linea de rg (archivo y numero).
+    "label": "Find in Files",
+    "command": "f=$(rg --line-number --no-heading --color=always --smart-case '' | fzf --ansi --delimiter : --preview 'bat --color=always --style=numbers --highlight-line {2} {1}' --preview-window '+{2}-/2') && [ -n \"$f\" ] && zeditor \"$(echo \"$f\" | cut -d: -f1):$(echo \"$f\" | cut -d: -f2)\"",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+
+  // ─── Otros ──────────────────────────────────────────────────────────────
+  {
+    "label": "Lazygit",
+    "command": "lazygit",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Obsidian",
+    "command": "obsidian &",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "no_focus"
+  }
+]

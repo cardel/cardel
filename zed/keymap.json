@@ -1,3 +1,16 @@
+// Zed — atajos. El porque esta en zed/README.md.
+//
+// Nota: el keymap de vim que trae Zed ya cubre casi toda la navegacion LSP
+// con las convenciones de nvim moderno, asi que aqui NO se repiten. Ya
+// funcionan de fabrica:
+//
+//   K / g h   hover          g d       ir a definicion
+//   g r r     referencias    g y       ir al tipo
+//   g r n     renombrar      g I       ir a implementacion
+//   g r a     acciones       g O       esquema
+//   ] d / [ d  diagnostico   ] c / [ c  cambio de git
+//
+// Los ajustes por defecto se ven con `zed: open default keymap`.
 [
   {
     "context": "Workspace",
@@ -36,22 +49,72 @@
   {
     "context": "Editor && vim_mode == normal && vim_operator == none && !VimWaiting",
     "bindings": {
+      // ── paneles ──────────────────────────────────────────────────────
       "space e": "project_panel::ToggleFocus",
-      "space g": "git_panel::ToggleFocus",
       "space o": "outline_panel::ToggleFocus",
       "space d": "diagnostics::Deploy",
+      "space t": "terminal_panel::ToggleFocus",
       "space space": "file_finder::Toggle",
+
+      // ── LaTeX ────────────────────────────────────────────────────────
+      // texlab compila al guardar y salta al PDF solo (ver settings.json).
+      // Esto es para lo que el guardar no cubre.
+      "space l b": [
+        "task::Spawn",
+        { "task_name": "LaTeX: compilar", "reveal_target": "dock" }
+      ],
+      "space l w": [
+        "task::Spawn",
+        { "task_name": "LaTeX: compilar en continuo", "reveal_target": "dock" }
+      ],
+      "space l v": [
+        "task::Spawn",
+        { "task_name": "LaTeX: abrir el PDF", "reveal_target": "dock" }
+      ],
+      "space l c": [
+        "task::Spawn",
+        { "task_name": "LaTeX: limpiar auxiliares", "reveal_target": "dock" }
+      ],
+      "space l n": [
+        "task::Spawn",
+        { "task_name": "LaTeX: contar palabras", "reveal_target": "center" }
+      ],
+
+      // ── ventanas ─────────────────────────────────────────────────────
+      "space w h": "pane::SplitLeft",
+      "space w j": "pane::SplitDown",
+      "space w k": "pane::SplitUp",
+      "space w l": "pane::SplitRight",
+      "space w d": "pane::CloseActiveItem",
+
+      // ── buffers ──────────────────────────────────────────────────────
+      "space b d": "pane::CloseActiveItem",
+      "space b q": "pane::CloseInactiveItems",
+      "space tab a": "tab_switcher::ToggleAll",
+
+      // ── interruptores ────────────────────────────────────────────────
+      "space u w": "editor::ToggleSoftWrap",
+      "space u l": "editor::ToggleRelativeLineNumbers",
+      "space u i": "editor::ToggleInlayHints",
+      "space u a": "editor::ToggleEditPrediction",
+      "space u n": "workspace::ClearAllNotifications",
+      "space u b": "git::Blame",
+
+      // ── Copilot ──────────────────────────────────────────────────────
       "space a i": "assistant::InlineAssist",
       "space a d": "agent::OpenAgentDiff",
       "space a t": "agent::ToggleFocus",
-      "space t": "terminal_panel::ToggleFocus",
-      "space u n": "workspace::ClearAllNotifications",
-      "space u b": "git::Blame",
-      "space b q": "pane::CloseInactiveItems",
+
+      // ── git ──────────────────────────────────────────────────────────
+      // "space g" a secas se quito: convivia con "space g g" y en un keymap
+      // de Zed un prefijo y una secuencia larga no pueden compartir tecla.
+      "space g s": "git_panel::ToggleFocus",
       "space g g": [
         "task::Spawn",
         { "task_name": "Lazygit", "reveal_target": "center" }
       ],
+
+      // ── buscar ───────────────────────────────────────────────────────
       "-": ["task::Spawn", { "task_name": "Yazi", "reveal_target": "center" }],
       "space f f": [
         "task::Spawn",
@@ -65,11 +128,13 @@
         "task::Spawn",
         { "task_name": "Find in Files", "reveal_target": "center" }
       ],
-      "space o s": [
+
+      // ── notas ────────────────────────────────────────────────────────
+      // Estaba en "space o s", que chocaba con "space o" por lo mismo.
+      "space n o": [
         "task::Spawn",
         { "task_name": "Obsidian", "reveal_target": "center" }
-      ],
-      "space tab a": "tab_switcher::ToggleAll"
+      ]
     }
   },
   {
@@ -93,8 +158,21 @@
     }
   },
   {
-    "context": "ProjectPanel",
+    // El panel de proyecto con teclas de vim, que es lo que falta cuando se
+    // llega desde nvim-tree o neo-tree.
+    "context": "ProjectPanel && not_editing",
     "bindings": {
+      "j": "menu::SelectNext",
+      "k": "menu::SelectPrevious",
+      "a": "project_panel::NewFile",
+      "shift-a": "project_panel::NewDirectory",
+      "d": "project_panel::Delete",
+      "r": "project_panel::Rename",
+      "x": "project_panel::Cut",
+      "c": "project_panel::Copy",
+      "p": "project_panel::Paste",
+      "y p": "project_panel::CopyPath",
+      "y r": "project_panel::CopyRelativePath",
       "ctrl-r": "project_panel::RemoveFromProject"
     }
   }
