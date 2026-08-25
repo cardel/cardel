@@ -1,0 +1,12 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato:  paquete | como comprobarlo | para que
+#   nombre suelto -> binario en el PATH
+#   @font:Nombre  -> familia en fontconfig
+#   @pacman:X     -> se pregunta a pacman (para lo que no deja binario)
+#   vacio         -> no se comprueba
+# Un ? delante del paquete lo marca como opcional: se avisa aparte y no entra
+# en la orden de pacman.
+# Lista completa de todas las herramientas:  ../install.sh --paquetes
+
+alacritty|alacritty|el emulador de terminal
+ttf-jetbrains-mono-nerd|@font:JetBrainsMono Nerd Font Mono|la fuente de alacritty.toml; sin ella los glifos y el dibujo de cajas salen mal

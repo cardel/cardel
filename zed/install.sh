@@ -21,7 +21,7 @@ DST_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zed"
 # configuracion espera, este o no instalado. Es lo que se copia en una maquina
 # nueva antes de enlazar nada.
 if [[ "${1:-}" == "--paquetes" ]]; then
-  todos=$(awk -F'|' '!/^#/ && NF { print $1 }' "$SRC_DIR/paquetes.txt" | awk '!vistos[$0]++' | tr '\n' ' ')
+  todos=$(awk -F'|' '!/^#/ && NF { sub(/^\?/, "", $1); print $1 }' "$SRC_DIR/paquetes.txt" | awk '!vistos[$0]++' | tr '\n' ' ')
   echo "sudo pacman -S --needed ${todos% }"
   exit 0
 fi
@@ -141,11 +141,18 @@ FALTANTES=()
 
 comprobar_fila() {
   local paquete="$1" prueba="$2" para="$3"
+  # Un ? delante marca opcional; aqui no hay ninguno todavia, pero el formato
+  # es el mismo que lee ../install.sh --paquetes y conviene no divergir.
+  local opcional=no
+  [[ "$paquete" == \?* ]] && { opcional=si; paquete="${paquete#\?}"; }
   # Sin prueba: es dependencia de otro paquete, no se comprueba por separado.
   [[ -z "$prueba" ]] && return 0
 
   local etiqueta="$prueba" presente=1
-  if [[ "$prueba" == @font:* ]]; then
+  if [[ "$prueba" == @pacman:* ]]; then
+    etiqueta="${prueba#@pacman:}"
+    pacman -Q "${prueba#@pacman:}" >/dev/null 2>&1 || presente=0
+  elif [[ "$prueba" == @font:* ]]; then
     etiqueta="fuente"
     # El grep va SIN -q a proposito. Con -q, grep cierra la tuberia en cuanto
     # encuentra la primera coincidencia, fc-list muere con SIGPIPE (141) y el
@@ -161,7 +168,7 @@ comprobar_fila() {
     printf '  %-12s ok\n' "$etiqueta"
   else
     printf '  %-12s FALTA -- %s\n' "$etiqueta" "$para"
-    FALTANTES+=("$paquete")
+    [[ "$opcional" == no ]] && FALTANTES+=("$paquete")
   fi
 }
 

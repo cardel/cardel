@@ -1,0 +1,18 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+#
+# Los servidores de lenguaje NO van aqui: los instala mason, y install.sh los
+# reconstruye. Esto es lo que mason y lazy.nvim necesitan para poder hacerlo.
+
+neovim|nvim|el editor
+git|git|lazy.nvim clona cada plugin
+gcc|gcc|treesitter compila sus parsers al vuelo
+unzip|unzip|mason descomprime asi varios servidores
+nodejs|node|mason: servidores de JS/TS, y copilot
+npm|npm|idem
+python|python3|mason: servidores de Python
+ripgrep|rg|la busqueda de snacks.picker
+fd|fd|busqueda de archivos
+jdk21-openjdk|@pacman:jdk21-openjdk|jdtls se niega a arrancar con menos de 21; java.lua apunta a este JDK con --java-executable en vez de cambiar el del sistema
+texlive-bin|chktex|los diagnosticos de LaTeX, que texlab trae apagados de fabrica

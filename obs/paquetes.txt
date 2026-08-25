@@ -1,0 +1,13 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+obs-studio|obs|el binario se llama obs, no obs-studio
+pipewire|@pacman:pipewire|es quien multiplexa la camara y el microfono: abre /dev/video0 una vez y reparte a N clientes
+wireplumber|@pacman:wireplumber|la politica de PipeWire; ahi se persiste el microfono por defecto
+
+# Camino 2 (camara virtual). Solo hace falta si quieres que Zoom vea la escena
+# compuesta de OBS en vez de la camara cruda. Requiere root y reiniciar el
+# modulo; por eso obs/install.sh se queda fuera de --all.
+?v4l2loopback-dkms|@pacman:v4l2loopback-dkms|el modulo de la camara virtual
+?linux-headers|@pacman:linux-headers|dkms lo necesita para compilar el modulo

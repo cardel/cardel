@@ -1,0 +1,11 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver ../alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+pandoc-cli|pandoc|el paquete NO se llama pandoc
+texlive-xetex|xelatex|el motor con el que se compone el PDF
+mermaid-cli|mmdc|convierte los diagramas a imagen antes de pasar por LaTeX
+chromium|chromium|mmdc lo usa por dentro, via puppeteer
+noto-fonts|@pacman:noto-fonts|Noto Sans, la fuente base del documento
+noto-fonts-extra|@pacman:noto-fonts-extra|Noto Sans Math, para los simbolos
+ttf-liberation|@pacman:ttf-liberation|Liberation Mono, para los bloques de codigo

@@ -1,0 +1,7 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+yazi|yazi|el gestor de archivos; trae tambien el CLI `ya`, que install.sh usa para los plugins
+chafa|chafa|vista previa de imagenes; Alacritty no implementa ningun protocolo grafico, asi que se pinta con simbolos
+poppler|pdftotext|vista previa de PDFs como texto, que es lo unico legible a este tamano de celda

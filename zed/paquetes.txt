@@ -15,7 +15,9 @@
 # En la segunda columna:
 #   un nombre suelto   -> se busca ese binario en el PATH
 #   @font:Nombre       -> se busca esa familia en fontconfig
-#   vacio              -> no se comprueba (es dependencia de otro)
+#   @pacman:X          -> se le pregunta a pacman (para lo que no deja binario)
+#   vacio              -> no se comprueba
+# Un ? delante del paquete lo marca opcional.
 #
 # Todos estan en los repos oficiales (extra); ninguno viene del AUR.
 # Ojo con dos nombres que no coinciden con su binario: el de pandoc es
@@ -26,7 +28,7 @@ texlive-binextra|latexmk|compilar un .tex sin Makefile (space l b)
 texlive-binextra|texcount|la tarea "LaTeX: contar palabras" (space l n)
 texlive-bin|chktex|los avisos de LaTeX dentro del editor
 zathura|zathura|ver el PDF en la linea del cursor (space l v)
-zathura-pdf-mupdf||el motor con el que zathura abre PDFs; sin el, no abre nada
+zathura-pdf-mupdf|@pacman:zathura-pdf-mupdf|el motor con el que zathura abre PDFs; sin el, abre la ventana y no pinta nada
 ttf-iosevkaterm-nerd|@font:IosevkaTerm Nerd Font|la fuente que pide settings.json
 pandoc-cli|pandoc|formulas en Markdown (space m f)
 mermaid-cli|mmdc|rasterizar mermaid en el PDF de la carpeta (space m d)

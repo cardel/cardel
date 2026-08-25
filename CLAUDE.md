@@ -490,14 +490,41 @@ Write `grep 'patrón' >/dev/null` instead, which reads the whole input. Use
 `sed -n '1p'` rather than `head -1` for the same reason. A `grep -q` reading a
 **file** or a here-string is fine — there is no pipe.
 
-### Package lists belong in a file, not in the script
+## System packages: every tool declares its own
 
-`zed/paquetes.txt` is the one source: `zed/install.sh` reads it both to report
-what is missing and to build the `pacman` line (`./install.sh --paquetes`).
-Adding a task that shells out to a new program is then one row, not a code
-change. Two names there are worth remembering because they do not match their
-binary: pandoc's package is **`pandoc-cli`**, and **`chktex` is not a package**
-at all — it arrives inside `texlive-bin`.
+Each tool carries a `paquetes.txt` next to its `install.sh`, one row per
+package:
+
+```
+paquete | como comprobarlo | para que sirve
+```
+
+The check column is `nombre` (binary on `PATH`), `@font:X` (fontconfig family),
+`@pacman:X` (ask pacman — for packages that leave no binary), or empty. A
+leading `?` marks the package **optional**: reported separately and kept out of
+the `pacman` line, because nothing breaks without it.
+
+The root script aggregates them:
+
+```bash
+./install.sh --paquetes         # what is missing, grouped by tool
+./install.sh --paquetes-todos   # the whole pacman line, for a new machine
+```
+
+Register a new tool in the `LISTAS` table. `pdfgithub` is in there despite
+having no installer, because it does have dependencies.
+
+Verified: all 51 required packages and the 4 optional ones resolve in the
+official repos — **nothing here comes from the AUR**. Three names do not match
+their binary and cost a while if copied wrong: pandoc's package is
+**`pandoc-cli`**, **`chktex` is not a package** (it arrives inside
+`texlive-bin`), and OBS's binary is `obs` while the package is `obs-studio`.
+Two things are deliberately *not* pacman packages: **gromit-mpx is a flatpak**
+(`flatpak install flathub net.christianbeier.Gromit-MPX`) and **oh-my-zsh** is
+AUR-or-installer.
+
+`zed/install.sh` keeps its own copy of this reader so it still works when run on
+its own; if the format changes, both have to change.
 
 ## Adding new tool configs
 
@@ -506,9 +533,10 @@ Every tool lives in a subdirectory named after it and carries its own
 The root `install.sh` is only a front-end: it lists status, runs one by name, or
 runs everything with `--all`.
 
-When adding a tool, register it in the root script's three tables —
-`INSTALADORES`, `DESTINOS`, and `MANUALES` if linking it would clobber something
-another installer writes to (that is why `zsh` is excluded from `--all`).
+When adding a tool, register it in the root script's tables — `INSTALADORES`,
+`DESTINOS`, `LISTAS` (its `paquetes.txt`), and `MANUALES` if linking it would
+clobber something another installer writes to (that is why `zsh` is excluded
+from `--all`).
 
 Some tools configure themselves and never read anything through Neovim, so their
 files are linked by `nvim/install.sh` into the path *they* look at:

@@ -1,0 +1,8 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+tmux|tmux|el multiplexor
+ttf-jetbrains-mono-nerd|@font:JetBrainsMono Nerd Font Mono|la misma fuente que alacritty; TERM=alacritty se declara en los dos archivos y tienen que ir a la par
+wl-clipboard|wl-copy|el atajo y de modo copia, en Wayland
+# En X11 el equivalente es xclip. OSC 52 funciona sin ninguno de los dos.

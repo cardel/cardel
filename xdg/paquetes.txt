@@ -1,0 +1,18 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+#
+# mimeapps.list solo dice QUE programa abre cada tipo; si el programa no esta,
+# el tipo queda sin asociar y xdg-open no dice nada. Por eso los manejadores
+# que nombra el archivo estan aqui.
+
+xdg-utils|@pacman:xdg-utils|xdg-open, que es quien consulta mimeapps.list
+desktop-file-utils|update-desktop-database|refresca la base de .desktop tras enlazar
+vlc|@pacman:vlc|video (los .mp4 se abren con este)
+evince|evince|PDF
+chromium|chromium|navegador
+vivaldi|@pacman:vivaldi|navegador
+gimp|gimp|imagenes
+xournalpp|xournalpp|anotar PDFs
+libreoffice-fresh|@pacman:libreoffice-fresh|hojas de calculo y documentos
+geany|geany|editor ligero para tipos sueltos

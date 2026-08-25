@@ -1,0 +1,11 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver ../../alacritty/paquetes.txt
+# Lista completa: ../../install.sh --paquetes
+
+zsh|zsh|la shell
+zoxide|zoxide|el plugin zoxide del .zshrc
+?pyenv|pyenv|el plugin pyenv esta en la lista del .zshrc, pero sale limpio si el binario no esta
+fzf|fzf|busqueda interactiva
+
+# oh-my-zsh NO esta en los repos oficiales: o el AUR (oh-my-zsh-git) o el
+# script oficial. install.sh se planta si no encuentra ~/.oh-my-zsh.
