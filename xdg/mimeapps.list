@@ -2,7 +2,7 @@
 application/pdf=com.github.xournalpp.xournalpp.desktop;com.google.Chrome.desktop;org.gnome.Evince.desktop;
 application/x-zerosize=geany.desktop;
 image/jpeg=chromium.desktop;feh.desktop;
-image/png=gimp.desktop;swayimg.desktop;
+image/png=swayimg.desktop;gimp.desktop;
 message/rfc822=vivaldi-stable.desktop;
 text/csv=libreoffice-calc.desktop;geany.desktop;
 text/plain=geany.desktop;
