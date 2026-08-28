@@ -33,3 +33,16 @@ ttf-iosevkaterm-nerd|@font:IosevkaTerm Nerd Font|la fuente que pide settings.jso
 pandoc-cli|pandoc|formulas en Markdown (space m f)
 mermaid-cli|mmdc|rasterizar mermaid en el PDF de la carpeta (space m d)
 lazygit|lazygit|la tarea "Lazygit" (space g g)
+
+# Lo que llaman las tareas de tasks.json. Sin esto los atajos existen, la tarea
+# arranca y el terminal se cierra con "command not found" — que es exactamente
+# el fallo silencioso que este archivo esta para evitar.
+fzf|fzf|el menu de las tres tareas de busqueda (space f f, space f d, space s g)
+fd|fd|lista los archivos y directorios que come fzf
+ripgrep|rg|la tarea "Find in Files" (space s g)
+bat|bat|la vista previa dentro de fzf, con colores y numeros de linea
+yazi|yazi|la tarea del guion "-", que abre el gestor de archivos
+obsidian|obsidian|la tarea "Obsidian" (space n o)
+make|make|"LaTeX: compilar" sube buscando un Makefile y lo usa cuando lo encuentra; solo cae en latexmk si no hay
+texlive-xetex|xelatex|el motor con el que pandoc arma el PDF de "Markdown: ver con formulas" (space m f)
+noto-fonts|@pacman:noto-fonts|esa misma tarea pide -V mainfont='Noto Sans'

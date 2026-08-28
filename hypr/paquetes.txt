@@ -9,6 +9,7 @@ grim|grim|capturas de pantalla
 slurp|slurp|seleccionar una region para la captura
 ?proton-vpn-gtk-app|protonvpn-app|solo si descomentas su exec-once, que hoy esta apagado. El binario es protonvpn-app: no existe proton-vpn ni protonvpn-cli, y Hyprland falla en silencio con una orden que no existe
 flatpak|flatpak|gromit-mpx se ejecuta por flatpak, no por pacman
+xdg-desktop-portal-hyprland|@pacman:xdg-desktop-portal-hyprland|compartir pantalla en Zoom o en el navegador. Declara Screenshot y ScreenCast; la camara NO pasa por aqui, esa la sirve xdg-desktop-portal a secas
 
 # gromit-mpx NO es un paquete de pacman aqui. Se instala aparte:
 #   flatpak install flathub net.christianbeier.Gromit-MPX

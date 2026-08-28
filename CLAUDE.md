@@ -514,7 +514,7 @@ The root script aggregates them:
 Register a new tool in the `LISTAS` table. `pdfgithub` is in there despite
 having no installer, because it does have dependencies.
 
-Verified: all 51 required packages and the 4 optional ones resolve in the
+Verified: all 61 required packages and the 4 optional ones resolve in the
 official repos — **nothing here comes from the AUR**. Three names do not match
 their binary and cost a while if copied wrong: pandoc's package is
 **`pandoc-cli`**, **`chktex` is not a package** (it arrives inside
@@ -525,6 +525,24 @@ AUR-or-installer.
 
 `zed/install.sh` keeps its own copy of this reader so it still works when run on
 its own; if the format changes, both have to change.
+
+**A tool's list must cover what its *tasks* call, not just what its config
+mentions.** `zed/paquetes.txt` described settings.json and nothing else, so the
+six `task::Spawn` bindings depended on `fzf`, `fd`, `ripgrep`, `bat`, `yazi`,
+`obsidian` and `make` with no row for any of them — a missing one opens the
+terminal, prints `command not found` and closes it. Same shape in
+`obs/paquetes.txt`, which named PipeWire but not the `pactl`, `v4l2-ctl` and
+`fuser` its own scripts run. Nothing showed up on either machine because all of
+it was already installed; the gap only exists for a clean one.
+
+The camera portal belongs to the **frontend**: `busctl --user introspect
+org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop
+org.freedesktop.portal.Camera` answers from `xdg-desktop-portal`, and no
+`.portal` file in `/usr/share/xdg-desktop-portal/portals/` declares Camera.
+`xdg-desktop-portal-hyprland` covers Screenshot and ScreenCast only, so it is
+what screen sharing needs, not the webcam; the permission dialog
+(`impl.portal.Access`) comes from **gtk**, the only installed backend that
+declares it.
 
 ## Adding new tool configs
 

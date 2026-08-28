@@ -11,3 +11,9 @@ wireplumber|@pacman:wireplumber|la politica de PipeWire; ahi se persiste el micr
 # modulo; por eso obs/install.sh se queda fuera de --all.
 ?v4l2loopback-dkms|@pacman:v4l2loopback-dkms|el modulo de la camara virtual
 ?linux-headers|@pacman:linux-headers|dkms lo necesita para compilar el modulo
+libpulse|pactl|mic-virtual.sh carga con el el sink nulo, y es como se fija el microfono por defecto
+pipewire-pulse|@pacman:pipewire-pulse|la capa PulseAudio de PipeWire; sin ella no hay pactl que sirva ni sink que Zoom pueda ver
+v4l-utils|v4l2-ctl|comprobar.sh lee con el las capacidades de cada /dev/videoN; tambien es como se verifica exclusive_caps
+psmisc|fuser|comprobar.sh mira quien tiene abierto /dev/video0; la respuesta debe ser pipewire y nadie mas
+xdg-desktop-portal|@pacman:xdg-desktop-portal|implementa el portal de camara por el que los navegadores piden la webcam. Medido: org.freedesktop.portal.Camera lo sirve el frontend, ningun backend lo declara
+xdg-desktop-portal-gtk|@pacman:xdg-desktop-portal-gtk|el dialogo de permiso. De los backends instalados solo gtk declara impl.portal.Access; el de hyprland cubre Screenshot y ScreenCast, no este
