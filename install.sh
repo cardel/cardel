@@ -21,6 +21,7 @@ ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 # nombre -> ruta del instalador
 declare -A INSTALADORES=(
   [alacritty]="alacritty/install.sh"
+  [foot]="foot/install.sh"
   [tmux]="tmux/install.sh"
   [nvim]="nvim/install.sh"
   [yazi]="yazi/install.sh"
@@ -38,6 +39,9 @@ MANUALES=(zsh obs)
 CONF="${XDG_CONFIG_HOME:-$HOME/.config}"
 declare -A DESTINOS=(
   [alacritty]="$CONF/alacritty/alacritty.toml"
+  # foot: NO es $CONF/foot/foot.ini. Ese lo genera refresh.sh con `>` y
+  # machacaria el repositorio a traves del enlace. Ver foot/README.md.
+  [foot]="$CONF/foot/overrides_colors.ini"
   [tmux]="$HOME/.tmux.conf"
   [nvim]="$CONF/nvim"
   [yazi]="$CONF/yazi"
@@ -52,6 +56,7 @@ declare -A DESTINOS=(
 # Incluye pdfgithub, que no tiene instalador pero si dependencias.
 declare -A LISTAS=(
   [alacritty]="alacritty/paquetes.txt"
+  [foot]="foot/paquetes.txt"
   [tmux]="tmux/paquetes.txt"
   [nvim]="nvim/paquetes.txt"
   [yazi]="yazi/paquetes.txt"

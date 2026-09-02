@@ -1,0 +1,11 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+foot|foot|el emulador de terminal
+ttf-jetbrains-mono-nerd|@font:JetBrainsMono Nerd Font Mono|la fuente de foot.ini; la MISMA que alacritty y tmux, y con la variante Mono a proposito: la que no lo es pinta los iconos Nerd a doble ancho
+xdg-utils|@pacman:xdg-utils|xdg-open, que es lo que abre las URLs de Ctrl+Shift+o
+
+# Lo que llaman los atajos, no lo que menciona la configuracion. Un atajo cuyo
+# programa no existe abre una ventana, imprime "command not found" y la cierra.
+neovim|nvim|Ctrl+Shift+p vuelca el historial de la ventana en nvim
