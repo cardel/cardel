@@ -1,12 +1,12 @@
-#ccaa68
-#c2914a
-#8a8987
+#86339c
+#3d41b9
+#6688a0
 ### Do not remove above lines ###
 ###       START CONFIG        ###
 [mgr]
-cwd =             { fg = "#ccaa68" }
-find_keyword =    { fg = "#c2914a", bold = true, italic = true, underline = true }
-marker_selected = { fg = "#c2914a", bg = "#c2914a" }
+cwd =             { fg = "#86339c" }
+find_keyword =    { fg = "#3d41b9", bold = true, italic = true, underline = true }
+marker_selected = { fg = "#3d41b9", bg = "#3d41b9" }
 
 # Marker
 marker_copied = { fg = "#E2D61D", bg = "#E2D61D" }
@@ -15,11 +15,11 @@ marker_marked = { fg = "#C738B2", bg = "#C738B2" }
 # Count
 count_copied = { fg = "#1E1E2E", bg = "#E2D61D" }
 count_cut =    { fg = "#1E1E2E", bg = "#2E8FD1" }
-count_selected = { fg = "#1e1e2e", bg = "#c2914a" }
+count_selected = { fg = "#1e1e2e", bg = "#3d41b9" }
 
 # Border
 border_symbol = "│"
-border_style = { fg = "#8a8987" }
+border_style = { fg = "#6688a0" }
 
 # Indicador del archivo bajo el cursor (antes manager.hovered/preview_hovered)
 [indicator]
@@ -34,12 +34,12 @@ inactive = {}
 
 # Antes status.mode_normal/mode_select/mode_unset
 [mode]
-normal_main = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
-normal_alt =  { fg = "#c2914a", bg = "#8a8987" }
-select_main = { fg = "#1e1e2e", bg = "#c2914a", bold = true }
-select_alt =  { fg = "#c2914a", bg = "#8a8987" }
-unset_main =  { fg = "#1e1e2e", bg = "#c2914a", bold = true }
-unset_alt =   { fg = "#c2914a", bg = "#8a8987" }
+normal_main = { fg = "#1e1e2e", bg = "#3d41b9", bold = true }
+normal_alt =  { fg = "#3d41b9", bg = "#6688a0" }
+select_main = { fg = "#1e1e2e", bg = "#3d41b9", bold = true }
+select_alt =  { fg = "#3d41b9", bg = "#6688a0" }
+unset_main =  { fg = "#1e1e2e", bg = "#3d41b9", bold = true }
+unset_alt =   { fg = "#3d41b9", bg = "#6688a0" }
 
 [status]
 # Antes separator_open / separator_close
@@ -48,43 +48,43 @@ sep_right = { open = "", close = "" }
 
 # Progress
 progress_label =  { fg = "#FFFFFF", bold = true }
-progress_normal = { fg = "#c2914a", bg = "#8a8987" }
-progress_error =  { fg = "#FF1300", bg = "#8a8987" }
+progress_normal = { fg = "#3d41b9", bg = "#6688a0" }
+progress_error =  { fg = "#FF1300", bg = "#6688a0" }
 
 # Antes [select]
 [pick]
-border = { fg = "#c2914a" }
-active = { fg = "#c2914a", bold = true }
+border = { fg = "#3d41b9" }
+active = { fg = "#3d41b9", bold = true }
 inactive = {}
 
 [input]
 title = {}
 value = {}
-border =   { fg = "#c2914a" }
+border =   { fg = "#3d41b9" }
 selected = { reversed = true }
 
 # Antes [completion]
 [cmp]
-border = { fg = "#c2914a" }
+border = { fg = "#3d41b9" }
 
 [tasks]
 title = {}
-border =  { fg = "#c2914a" }
-hovered = { fg = "#8a8987", underline = true }
+border =  { fg = "#3d41b9" }
+hovered = { fg = "#6688a0", underline = true }
 
 [which]
-cand = { fg = "#c2914a" }
-desc = { fg = "#8a8987" }
+cand = { fg = "#3d41b9" }
+desc = { fg = "#6688a0" }
 separator = "  "
 
 [help]
-on =      { fg = "#c2914a" }
-run =     { fg = "#8a8987" }
+on =      { fg = "#3d41b9" }
+run =     { fg = "#6688a0" }
 hovered = { reversed = true, bold = true }
-footer =  { fg = "#8a8987", bg = "#8a8987" }
+footer =  { fg = "#6688a0", bg = "#6688a0" }
 
 [notify]
-title_info =  { fg = "#c2914a" }
+title_info =  { fg = "#3d41b9" }
 title_warn =  { fg = "#E1710E" }
 title_error = { fg = "#FF1300" }
 
@@ -151,11 +151,11 @@ prepend_conds = [
 	{ if = "link"  , text = "", fg = "#00AEFF" },
 
 	# ifback
-	{ if = "dir",  text = "", fg = "#c2914a" },
+	{ if = "dir",  text = "", fg = "#3d41b9" },
 	{ if = "exec", text = "", fg = "#89E051" },
 	{ if = "!dir", text = "", fg = "#FFFFFF" },
 ]
 
 [filetype]
-rules = [{ url = "*", fg = "#ccaa68" }, { url = "*/", fg = "#c2914a" }]
+rules = [{ url = "*", fg = "#86339c" }, { url = "*/", fg = "#3d41b9" }]
 ###       END CONFIG        ###
