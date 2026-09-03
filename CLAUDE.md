@@ -11,6 +11,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | Directory | Tool |
 |-----------|------|
 | `alacritty/` | Alacritty terminal emulator (TOML) |
+| `foot/` | foot terminal emulator (Wayland; the one actually in daily use) |
 | `tmux/` | tmux multiplexer |
 | `config/oh-my-zsh/` | Zsh + Oh My Zsh |
 | `config/i3/` | i3 window manager (X11 fallback) |
@@ -83,6 +84,68 @@ does exist, which is worse than not asking.
 ### Terminal compatibility
 `TERM=alacritty` is declared in both `alacritty/alacritty.toml` and `tmux/tmux.conf`. These must stay in sync — a mismatch silently breaks 24-bit truecolor, modifier keys, and focus events. Alacritty ≥ 0.13 is required (TOML schema; YAML configs are rejected).
 
+**Every terminal needs its own `terminal-features` row in `tmux.conf`, and tmux
+ships almost none.** Measured on tmux 3.7c with a bare server, the built-in
+table is three lines — `xterm*`, `screen*`, `rxvt*` — and nothing else. Neither
+foot's nor Alacritty's terminfo declares `RGB` or `Tc`, so without a row tmux
+quantizes to 256 colours and drops OSC 52 and sixel **silently**: nothing
+errors, the colours are just wrong. `foot` had no row at all until this was
+found.
+
+### foot is the terminal in daily use, and its config is not where it looks (`foot/`)
+
+Measured on **foot 1.27.0**, tmux 3.7c, Hyprland 0.56.2. Full evidence in
+`foot/README.md`.
+
+- **`~/.config/foot/foot.ini` is generated, not edited.**
+  `~/.local/bin/refresh.sh` (the JaKooLit theme pipeline) builds it with
+  `cat defaults.ini overrides.ini ~/.cache/wal/foot.base.ini
+  overrides_colors.ini > foot.ini`, and **`>` follows symlinks** — measured:
+  the link survives and the *target* is overwritten. Symlinking `foot.ini`
+  into this repo would therefore have pywal's output written into the
+  repository on the next theme refresh, silently. This is the `prefs.js` trap,
+  not the Zed one.
+  The config is linked to **`overrides_colors.ini`** instead: it is last in the
+  concatenation, and in foot **the last occurrence of a key wins** (measured
+  with a file declaring `term` twice, then reading `$TERM` in the spawned
+  shell). Verified end to end by asking the running terminal for its
+  background over OSC 11 — `rgb:0f0f/1111/1515`, the repo's `#0f1115`, not
+  pywal's `0b090a`. Because foot reads only `foot.ini`, `foot/install.sh`
+  regenerates it after linking.
+- **`fc-match` alone never proves a font exists.** `defaults.ini` asked for
+  `JetBrainsMonoNF`, which is not a family; fontconfig resolved it by
+  similarity to `JetBrainsMono Nerd Font` — the **proportional** variant,
+  where Nerd glyphs take two cells. The terminal wants
+  `JetBrainsMono Nerd Font Mono`, which is what Alacritty and tmux already
+  use. Always compare the family `fc-match` returns against the one asked for.
+- **`[colors]` is deprecated in foot 1.27**; the sections are `[colors-dark]`
+  and `[colors-light]`, with `color-theme-toggle` switching at runtime (bound
+  to `Ctrl+Shift+t` — the projector case). pywal's template still writes the
+  old name, so that warning appears on every start and is harmless noise.
+- **`foot --check-config` is the validator, and it exits 230** on an option
+  that does not exist (0 when merely deprecated). `install.sh` runs it before
+  linking, because a broken config does not fail at startup — foot falls back
+  to defaults and the symptom is "the theme did not apply". Note
+  `foot --check-config ... | sed ...; echo $?` reports *sed's* status and
+  always looks like 0.
+- **`line-height` and `letter-spacing` are deliberately unset.** `yazi.toml`
+  passes chafa `--font-ratio 600/1320`, derived from this font's metrics;
+  either option changes the cell shape and image previews come out stretched.
+- **foot processes sixel, and Alacritty implements no graphics protocol at
+  all.** tmux 3.7c is built with sixel support too. So the reason `yazi/`
+  previews PDFs as text is an Alacritty limitation that does not apply under
+  foot — untried so far, and the next thing worth measuring.
+- **The zsh emits neither OSC 133 nor OSC 7**, so `prompt-prev`/`prompt-next`
+  would have nothing to jump to and `Ctrl+Shift+n` opens in `$HOME` rather
+  than the current directory. Those bindings are therefore *not* declared — a
+  key that does nothing is worse than no key. `foot/README.md` carries the
+  `.zshrc` snippet that turns them on.
+- **`$TERMINAL` still says `alacritty`**, in both
+  `~/.config/hypr/user_configs/default_apps.conf` and `.zshrc`, so
+  `SUPER+Return` opens Alacritty. Left alone on purpose: that is a decision,
+  not a defect.
+
+
 ### Font dependencies
 - JetBrainsMono Nerd Font Mono (`ttf-jetbrains-mono-nerd` on Arch) — used by Alacritty and tmux
 - IosevkaTerm Nerd Font — used by Zed
@@ -105,6 +168,13 @@ in the binary, the man page or the changelog). `pdftotext -layout` gives the
 title, authors and abstract, which is what actually identifies a file in a list;
 `fold -s -w "${w}"` wraps instead of truncating, since pdftotext emits up to 70
 columns.
+
+**That conclusion is Alacritty's, not yazi's**, and it stops being true under
+foot: foot 1.27 processes sixel and tmux 3.7c is built with sixel support, so
+under the terminal actually in daily use a rendered page could be shown as an
+image. Nothing here has been changed for it yet — see the foot section above.
+Note the `--font-ratio` below is also why `foot.ini` leaves `line-height` and
+`letter-spacing` unset.
 
 For real images, chafa must be told the terminal's **cell shape** or previews
 come out stretched. It assumes 1:2; JetBrainsMono Nerd Font Mono is
@@ -514,7 +584,7 @@ The root script aggregates them:
 Register a new tool in the `LISTAS` table. `pdfgithub` is in there despite
 having no installer, because it does have dependencies.
 
-Verified: all 61 required packages and the 4 optional ones resolve in the
+Verified: all 62 required packages and the 4 optional ones resolve in the
 official repos — **nothing here comes from the AUR**. Three names do not match
 their binary and cost a while if copied wrong: pandoc's package is
 **`pandoc-cli`**, **`chktex` is not a package** (it arrives inside
