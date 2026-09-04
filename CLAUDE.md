@@ -94,7 +94,7 @@ found.
 
 ### foot is the terminal in daily use, and its config is not where it looks (`foot/`)
 
-Measured on **foot 1.27.0**, tmux 3.7c, Hyprland 0.56.2. Full evidence in
+Measured on **foot 1.28.0**, tmux 3.7c, Hyprland 0.56.2. Full evidence in
 `foot/README.md`.
 
 - **`~/.config/foot/foot.ini` is generated, not edited.**
@@ -140,6 +140,20 @@ Measured on **foot 1.27.0**, tmux 3.7c, Hyprland 0.56.2. Full evidence in
   than the current directory. Those bindings are therefore *not* declared — a
   key that does nothing is worse than no key. `foot/README.md` carries the
   `.zshrc` snippet that turns them on.
+- **The window is translucent (`alpha=0.92`), and the blur is Hyprland's, not
+  foot's.** `hyprctl getoption decoration:blur:enabled` returns 1 (size 3), so
+  the compositor already blurs anything translucent; foot's own `blur` option,
+  which needs `ext-background-effect-v1`, would be redundant here and stays off.
+  **This cannot be checked by eye** — the first attempt at `alpha=0.85` looked
+  opaque because the wallpaper behind was dark, and nearly produced the opposite
+  conclusion. Capture the same region with `grim` and average the pixels
+  instead: `alpha=1.0` gives RGB `[15,17,21]` (exactly `#0f1115`), `alpha=0.4`
+  gives `[74,64,54]`. The value comes from contrast, not taste: 0.92 keeps
+  13.5:1 over this wallpaper and 11.5:1 over a pure white one, against WCAG
+  AAA's 7:1. `[colors-light]` stays fully opaque, since that theme is for
+  projecting. **`gamma-correct-blending` (new in 1.28) stays off**: foot warns
+  `16-bit surfaces requested, but compositor does not implement
+  ABGR161616+XBGR161616` and falls back to 8-bit.
 - **`$TERMINAL` still says `alacritty`**, in both
   `~/.config/hypr/user_configs/default_apps.conf` and `.zshrc`, so
   `SUPER+Return` opens Alacritty. Left alone on purpose: that is a decision,

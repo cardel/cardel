@@ -1,6 +1,6 @@
 # foot
 
-Terminal de Wayland para programar. Medido con **foot 1.27.0**, Hyprland
+Terminal de Wayland para programar. Medido con **foot 1.28.0**, Hyprland
 0.56.2, tmux 3.7c, JetBrainsMono Nerd Font.
 
 `foot.ini` es la fuente de verdad. Todo lo que sigue esta comprobado en esta
@@ -255,11 +255,54 @@ add-zsh-hook preexec _foot_preexec
 Con eso puestas, anadir a `[key-bindings]`:
 `prompt-prev=Control+Shift+z` y `prompt-next=Control+Shift+x`.
 
-**El desenfoque no esta comprobado.** `alpha=0.95` mas `blur=yes` en
-`[colors-dark]` dan transparencia con desenfoque, pero `blur` necesita que el
-compositor implemente `ext-background-effect-v1`. El binario de foot lo
-soporta (`+blur` en `foot --version`) y el de Hyprland 0.56.2 menciona la
-cadena dos veces, que es indicio pero **no** prueba. Se deja `alpha=1.0`.
+## Transparencia: medida, y el desenfoque no es de foot
+
+Esto estaba sin comprobar hasta 2026-09-04. Ya no.
+
+**Quien difumina es Hyprland, no foot.** `hyprctl getoption decoration:blur:enabled`
+devuelve `1` y `blur:size` devuelve `3`: el compositor ya desenfoca por su cuenta
+todo lo que sea translucido. La opcion `blur` de foot, que necesita
+`ext-background-effect-v1`, sirve para compositores que *no* hacen eso — aqui
+seria redundante, asi que se deja apagada. Basta con bajar `alpha`.
+
+**A ojo no se puede comprobar, y por poco lleva a la conclusion contraria.** La
+primera prueba puso `alpha=0.85`, salio una ventana que parecia opaca y casi se
+concluye que la transparencia no funcionaba. Lo que pasaba es que detras habia
+una zona oscura del fondo de pantalla. La forma correcta es capturar la misma
+region con `grim` y promediar los pixeles:
+
+| | media RGB de la ventana |
+|---|---|
+| `alpha=1.0` | `[15.0, 17.0, 21.0]` — exactamente `#0f1115` |
+| `alpha=0.4` | `[73.8, 63.6, 53.7]` — el fondo de pantalla asomando |
+
+Es la misma regla de siempre en este repositorio: antes de creerse que algo no
+funciona, comprobar que la sonda puede ver lo que si funciona.
+
+**El valor sale del contraste, no del gusto.** Con `foreground=d8dee9` sobre
+`background=0f1115`, mezclando el fondo de pantalla por detras:
+
+| alpha | sobre este fondo | sobre un fondo **blanco** |
+|---|---|---|
+| 1.00 | 14.0:1 | 14.0:1 |
+| 0.95 | 13.7:1 | 12.5:1 |
+| **0.92** | **13.5:1** | **11.5:1** |
+| 0.85 | 13.1:1 | 9.1:1 |
+| 0.80 | 12.8:1 | 7.6:1 |
+
+WCAG AAA pide 7:1 para texto normal. **0.92** es el valor puesto: se nota la
+profundidad y sobra margen incluso con el peor fondo de pantalla posible. A
+0.80 se estaria justo en el limite si el fondo fuese claro.
+
+`[colors-light]` se queda en `alpha=1.0` a proposito: ese tema es el de
+proyectar en clase (`Ctrl+Shift+t`), donde lo que hace falta es contraste
+maximo, no efecto.
+
+**`gamma-correct-blending` se queda apagado.** foot 1.28 lo estrena y es como
+se deberian mezclar los glifos, pero activandolo con `-o` el propio foot avisa:
+`16-bit surfaces requested, but compositor does not implement
+ABGR161616+XBGR161616`. Hyprland 0.56.2 no da superficies de 16 bits, asi que
+cae a 8 y no aporta nada.
 
 ---
 
