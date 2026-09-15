@@ -513,17 +513,38 @@ session, which flushes the stale in-memory `FASTEST` back to disk.
 
 ### gromit-mpx draws on the whole X screen, and its own keys never arrive (`hypr/`)
 
-Two separate defects, both invisible until measured, both fixed from Hyprland's
-side because gromit offers no lever for either.
+Three separate defects, all invisible until measured, all fixed from Hyprland's
+side because gromit offers no lever for any of them.
 
 - **Its hotkeys are grabbed on XWayland, not the compositor.** `--debug` prints
   `Grabbing hot key 'F9' from keyboard '3'`, and an XWayland grab only receives
-  keys while an X window holds focus — which gromit's overlay never takes, by
-  design, so clicks reach what is underneath. The same log line shows the MPX in
-  the name does not survive either: `Now 1 enabled devices`, one virtual
-  pointer instead of separate ones. So the actions are bound in
-  `overrides.conf` and delivered over the CLI. A `flatpak run` with options
-  costs 130 ms measured — fine for a keybinding.
+  keys while an X window holds focus — which gromit's overlay only takes while
+  it is drawing (measured: `hyprctl activewindow` is `Gromit-mpx` while active
+  and returns to the previous window on toggle-off). The same log line shows
+  the MPX in the name does not survive either: `Now 1 enabled devices`, one
+  virtual pointer instead of separate ones. So `overrides.conf` declares
+  **gromit's own default keys** (`F9`, `Shift+F9`, `Ctrl+F9`, `Alt+F9`, `F8`,
+  `Shift+F8`, plus `SUPER` variants) as Hyprland binds and delivers them over
+  the CLI. gromit is started with `--key none --undo-key none` so there is only
+  one layer — with both, `F9` over a focused X window would toggle twice.
+  Verified both ways: without the flags the grab line appears, with them it
+  does not. Cost: `F8`/`F9` no longer reach applications (Zed's diagnostics
+  jump, LibreOffice's selection mode / recalc).
+- **The CLI has two disjoint option sets, and mixing them is silent.**
+  Startup options are `--active --debug --key --keycode --line --opacity
+  --undo-key --undo-keycode --version`; control options for a *running*
+  instance are `--toggle --clear --visibility --undo --redo --quit --reload`.
+  A control option with no instance dies with
+  `Unknown Option for Gromit-MPX startup: "--toggle"`, exit 1 — measured on
+  1.9.0. Every bind used to call `flatpak run … --toggle` directly, and a
+  comment claimed that line would start gromit if needed; it never did, which
+  is why `SUPER+C` opened nothing. **`hypr/gromit.sh`** (linked to
+  `~/.local/bin/gromit.sh`, where Hyprland resolves bare script names) now
+  decides per keypress: `pgrep -x gromit-mpx` (the flatpak's process keeps
+  that name) → send the control option, else `setsid -f … --active`. The
+  window is up 437 ms after the call, so no `exec-once` is needed, and control
+  actions with no instance exit 0 silently rather than starting gromit to undo
+  nothing.
 - **There is no monitor option.** The binary accepts only `--active --clear
   --debug --key --keycode --line --opacity --quit --redo --reload --toggle
   --undo --undo-key --undo-keycode --version --visibility`. It paints the whole

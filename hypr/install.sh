@@ -2,6 +2,7 @@
 # install.sh -- symlink this folder's overrides.conf into the Hyprland config.
 #
 #   overrides.conf -> $XDG_CONFIG_HOME/hypr/user_configs/overrides.conf
+#   gromit.sh      -> ~/.local/bin/gromit.sh
 #
 # Run from this directory:  ./install.sh
 # Resolves its own path so the source repo can live anywhere on disk.
@@ -37,6 +38,21 @@ fi
 
 ln -sfn -- "$SRC_FILE" "$DST_FILE"
 echo "linked $DST_FILE -> $SRC_FILE"
+
+# gromit.sh es lo que llaman los binds de gromit en overrides.conf. Va a
+# ~/.local/bin porque es donde Hyprland resuelve los scripts de los binds sin
+# ruta (volume.sh, refresh.sh, brightness.sh viven ahi): la distribucion lo pone
+# en el PATH del compositor. Un bind con un nombre que no resuelve falla en
+# silencio, asi que si esta carpeta no existe se crea, no se avisa y se sigue.
+BIN_DIR="$HOME/.local/bin"
+mkdir -p -- "$BIN_DIR"
+if [[ -e "$BIN_DIR/gromit.sh" && ! -L "$BIN_DIR/gromit.sh" ]]; then
+  backup="$BIN_DIR/gromit.sh.bak.$(date +%Y%m%d-%H%M%S)"
+  mv -- "$BIN_DIR/gromit.sh" "$backup"
+  echo "backed up existing script -> $backup"
+fi
+ln -sfn -- "$SRC_DIR/gromit.sh" "$BIN_DIR/gromit.sh"
+echo "linked $BIN_DIR/gromit.sh -> $SRC_DIR/gromit.sh"
 
 # overrides.conf termina con `source = local.conf`, y un source que apunta a un
 # archivo inexistente es un error de configuracion en Hyprland -- comprobado en

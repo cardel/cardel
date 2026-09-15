@@ -13,5 +13,7 @@ xdg-desktop-portal-hyprland|@pacman:xdg-desktop-portal-hyprland|compartir pantal
 
 # gromit-mpx NO es un paquete de pacman aqui. Se instala aparte:
 #   flatpak install flathub net.christianbeier.Gromit-MPX
-# Sus propias teclas no llegan bajo Wayland (las engancha en XWayland y su
-# ventana nunca toma el foco), por eso overrides.conf las manda por la CLI.
+# Sus propias teclas (F9, F8) no llegan bajo Wayland: las engancha en XWayland
+# y su ventana solo toma el foco mientras dibuja. overrides.conf declara esas
+# mismas teclas en Hyprland y las manda por gromit.sh, que ademas arranca gromit
+# si no corre -- las opciones de control (--toggle...) no arrancan nada.
