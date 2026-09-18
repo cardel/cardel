@@ -39,6 +39,19 @@ return {
     },
   },
 
+  -- Valores de las variables al final de la linea, no pegados al nombre.
+  --
+  -- nvim-dap-virtual-text en nvim >= 0.10 usa virt_text_pos = "inline" y
+  -- escribe " = 4" justo detras del identificador, asi que
+  -- `def factorial(n:Int, acc:Int)` se ve como `factorial(n = 4:Int, acc = 5:Int)`
+  -- (medido depurando Factorial.scala). Con "eol" queda `n = 4, acc = 5` al
+  -- final de la linea, que es lo que se espera ver al explicar una recursion.
+  {
+    "theHamsta/nvim-dap-virtual-text",
+    optional = true,
+    opts = { virt_text_pos = "eol" },
+  },
+
   -- Puente neotest <-> dap. neotest ya esta instalado por test.core, pero sin
   -- nvim-dap la estrategia "dap" no existia, asi que no habia atajo para
   -- depurar el test bajo el cursor.

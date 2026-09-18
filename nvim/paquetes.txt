@@ -16,3 +16,9 @@ ripgrep|rg|la busqueda de snacks.picker
 fd|fd|busqueda de archivos
 jdk21-openjdk|@pacman:jdk21-openjdk|jdtls se niega a arrancar con menos de 21; java.lua apunta a este JDK con --java-executable en vez de cambiar el del sistema
 texlive-bin|chktex|los diagnosticos de LaTeX, que texlab trae apagados de fabrica
+sbt|sbt|metals importa un build sbt ejecutando `sbt bloopInstall`; el launcher de pacman baja la version que pida project/build.properties
+
+# coursier NO es un paquete de pacman. Lo instala su propio instalador en
+# ~/.local/share/coursier/bin (https://get-coursier.io/docs/cli-installation) y
+# es lo que nvim-metals usa para bajar el servidor la primera vez que se abre
+# un .scala (scala.lua). install.sh avisa si no esta en el PATH.

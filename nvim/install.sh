@@ -106,6 +106,15 @@ echo "instalando servidores y herramientas de mason..."
 nvim --headless -c "luafile $SRC_DIR/mason-bootstrap.lua" -c qa
 
 echo
-echo "listo. Faltan dos servidores que no vienen por mason:"
-echo "  raco pkg install racket-langserver     (Racket)"
-echo "  abre un .scala y ejecuta :MetalsInstall (Scala; usa coursier)"
+echo "listo. Dos servidores no vienen por mason:"
+echo "  raco pkg install racket-langserver   (Racket, a mano)"
+echo "  Scala: metals se baja solo al abrir el primer .scala, con coursier."
+if command -v coursier >/dev/null 2>&1 || command -v cs >/dev/null 2>&1; then
+  echo "         coursier: presente"
+else
+  # coursier no es paquete de pacman: lo instala su propio instalador en
+  # ~/.local/share/coursier/bin (https://get-coursier.io/docs/cli-installation).
+  # Sin el, nvim-metals no puede bajar el servidor y Scala se queda sin LSP.
+  echo "         coursier: NO esta en el PATH, y sin el no hay metals:"
+  echo "           https://get-coursier.io/docs/cli-installation"
+fi

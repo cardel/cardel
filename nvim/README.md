@@ -16,7 +16,7 @@ Dos servidores quedan fuera porque mason no los empaqueta:
 
 ```sh
 raco pkg install racket-langserver     # Racket
-# y, con un .scala abierto:  :MetalsInstall   (Scala; usa coursier)
+# Scala: metals se baja solo al abrir el primer .scala (necesita coursier)
 ```
 
 ## Requisitos de la máquina
@@ -33,7 +33,8 @@ GitHub. O sea:
 | `python` + `pip` | debugpy, yamllint, ansible-lint, cmakelang |
 | `jdk` (≥ 17) | jdtls y sus adaptadores de depuración |
 | `racket` (opcional) | solo si se va a usar `racket-langserver` |
-| `coursier` (opcional) | solo para `:MetalsInstall` (Scala) |
+| `coursier` | baja metals la primera vez que se abre un `.scala`; no es paquete de pacman, ver `paquetes.txt` |
+| `sbt` | metals importa los builds sbt con `sbt bloopInstall` |
 
 Si falta alguno, `install.sh` **no se detiene**: instala todo lo demás y lista al
 final lo que falló, con el nombre del paquete. Ese es el sentido de
@@ -170,9 +171,11 @@ acciones obsoletas en `notasUniversidad/.github/workflows/pages.yml`.
 
 ### 3. Scala: 362 archivos sin nada
 
-Y todos dentro de proyectos **Gradle** (`settings.gradle` + el plugin `scala`,
-Scala 2.13, ScalaTest); no hay un solo `build.sbt` en el árbol, aunque `sbt`,
-`scala` y `coursier` sí están instalados vía coursier.
+En el PC de mesa, todos dentro de proyectos **Gradle** (`settings.gradle` + el
+plugin `scala`, Scala 2.13, ScalaTest). En el portátil es al revés: 304 `.scala`
+y casi todos bajo un `build.sbt` (`IdeaProjects/`, `clases/`, `FundProFunConc/`,
+Scala 3.8.1 y 2.13.18), con 21 `settings.gradle` además. La configuración cubre
+los dos.
 
 El extra `lang.scala` trae nvim-metals, y Metals **implementa el Debug Adapter
 por su cuenta**: no hace falta ningún adaptador de mason, basta
@@ -180,6 +183,61 @@ por su cuenta**: no hace falta ningún adaptador de mason, basta
 configuraciones `RunOrTest` y `Test Target`.
 
 Dos cosas del extra no servían tal cual aquí; ver `lua/plugins/scala.lua`.
+
+#### Y después, "nvim no funciona con Scala" (2026-09-17)
+
+Abrir cualquier `.scala` en el portátil daba una pantalla roja con `-- More --`
+y ningún servidor. Reproducido en un pty:
+
+```
+FileType Autocommands for "scala": Lua callback:
+  nvim-metals/lua/metals/install.lua:91: attempt to index local 'config' (a nil value)
+  in function 'install'   <- lua/plugins/scala.lua:53
+```
+
+Era nuestro propio auto-instalador. `require("metals").install()` lee una caché
+interna de configuración que solo rellena `initialize_or_attach()` (vía
+`validate_config`), y `scala.lua` registraba el autocmd de instalación **antes**
+que el de attach; los autocmds del mismo evento corren en orden de registro, así
+que `install()` llegaba con la caché vacía y reventaba en cada apertura. Encima
+el error salía en el propio FileType, y como metals nunca se había bajado en esa
+máquina (`~/.cache/nvim/nvim-metals/` sólo tenía un log), no había LSP ni con
+`:MetalsInstall` a mano.
+
+El orden correcto es el que nvim-metals espera de un humano: attach (que con el
+binario ausente no arranca nada, sólo valida y avisa) y luego install. La
+instalación es asíncrona y al terminar nvim-metals sólo dice "Start/Restart the
+server", no engancha nada; un temporizador espera al binario y engancha los
+buffers de Scala abiertos. No se usa la variante síncrona `install(true)`:
+bloquea nvim y tiene un tope fijo de 60 s, y la bajada tarda 23 s medidos con
+la caché de coursier vacía. El aviso "Welcome… use `:MetalsInstall`" que suelta
+la primera llamada —seis notificaciones, una por línea— se silencia sólo durante
+esa llamada, porque contradice al aviso nuestro que sale justo después.
+
+Medido de punta a punta: metals 1.6.9 se baja y engancha solo en 8-23 s;
+hover devuelve tipos reales; `RunOrTest` con un breakpoint para en la línea,
+Scopes muestra `n int = 5, acc int = 1`, el REPL evalúa, step over avanza. En
+Scala **3.8.1** el log avisa que no hay expression-compiler ni decodificador de
+frames publicados para esa versión (usa uno compatible; un step over desde el
+cuerpo de un `for` cae en `Range.foreach`). En **2.13.18**, la de las clases,
+cero avisos.
+
+Tres cosas más que salieron de mirarlo funcionar:
+
+- **El build target de Bloop es el id del proyecto sbt, no su `name :=`.** Con
+  `lazy val root = (project in file(".")).settings(name := "app")` sbt genera
+  `.bloop/root.json` y `root-test.json`. El *attach* del `scala.lua` anterior
+  fijaba `buildTarget = "app"` (el subproyecto de `gradle init`) y habría
+  fallado en todos los proyectos sbt sin decir por qué. Ahora lo lee de
+  `.bloop/` al lanzar, y pregunta si hay varios.
+- **El extra pone `statusBarProvider = "off"`**, y con eso importar un build
+  (sbt arrancando, 20-30 s) es silencio absoluto: lo que se percibe como
+  "colgado". Con `"on"`, nvim-metals escribe `vim.g.metals_status` y lualine
+  lo muestra (`Importing build`, `Compiling root`, `Indexing complete!`).
+- **Codelens**: metals pinta `run | debug` sobre cada `@main` y `test | debug
+  test` sobre cada suite; `<leader>cc` ejecuta el del cursor. LazyVim los trae
+  apagados para todos los servidores; aquí se refrescan sólo en buffers de
+  Scala.
 
 ### 4. Racket sin soporte
 
@@ -205,7 +263,7 @@ separado:
 | `dap.lua` | `debugpy` y `bash-debug-adapter` en mason; `<leader>td` para depurar el test bajo el cursor |
 | `linting.lua` | yamllint para YAML, actionlint restringido a `.github/workflows/`, shellcheck explícito |
 | `racket.lua` | parser de treesitter, `racket_langserver`, paredit en `.rkt` |
-| `scala.lua` | arregla el choque metals/jdtls y el atajo roto del extra; añade el *attach* de Gradle |
+| `scala.lua` | baja metals solo la primera vez y lo engancha; arregla el choque metals/jdtls y el atajo roto del extra; estado en lualine, codelens `run \| debug`, árbol de metals (`<leader>mt`); *attach* al puerto 5005 con el build target leído de `.bloop/` |
 
 Y `yamllint/config`, que baja el ruido de las reglas de fábrica. Un `.yamllint`
 dentro de un proyecto sigue teniendo prioridad sobre él.
@@ -247,16 +305,22 @@ módulo y queda `ServiceReady`. Con `dap.core` habilitado, `dap_main` escanea la
 clases `main` del proyecto y `test = true` engancha java-test, así que
 `<leader>dc` ya lista configuraciones reales.
 
-**Scala.** Metals importa el build a través de Bloop. Gradle es su integración
-menos pulida —necesita que el build aplique el plugin `scala`, que es el caso
-aquí— y la primera importación tarda. Si no arranca sola: `<leader>mi`
-(*import build*) y `<leader>mD` (*doctor*), que dice exactamente qué le falta.
+**Scala.** Metals importa el build a través de Bloop. Con sbt pregunta al abrir
+el proyecto ("New sbt workspace detected…" → *Import build*) y ejecuta
+`sbt bloopInstall`; con Gradle necesita que el build aplique el plugin `scala`.
+La primera importación tarda y lualine lo va contando. Si no arranca sola:
+`<leader>mi` (*import build*) y `<leader>mD` (*doctor*), que dice exactamente
+qué le falta. `<leader>mt` abre el árbol de metals, con las suites de test.
 
-**El camino que siempre funciona, para los dos.** Lanzar la tarea de Gradle
-suspendida y engancharse:
+Para depurar: breakpoint con `<leader>db`, `<leader>dc` → `RunOrTest`; o
+`<leader>cc` sobre el `run | debug` que metals pinta encima del `main`.
+
+**El camino que siempre funciona, para los dos.** Lanzar la herramienta de
+build suspendida en el puerto 5005 y engancharse (`<leader>dc` → *Attach*):
 
 ```sh
-./gradlew test --debug-jvm     # queda esperando en el puerto 5005
+sbt -jvm-debug 5005 run        # sbt; igual con test
+./gradlew test --debug-jvm     # Gradle
 ./gradlew run  --debug-jvm
 ```
 

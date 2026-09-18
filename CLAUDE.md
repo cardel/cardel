@@ -236,8 +236,34 @@ Language-server traps found by measurement, each one silent:
   cannot go in `ensure_installed`; `scala.lua` triggers nvim-metals' own
   coursier download on the first Scala buffer. Gradle works out of the box:
   nvim-metals' default `root_patterns` include `settings.gradle` but *not*
-  `build.gradle`, so the project root wins over the module. Bloop names the
-  build target after the Gradle subproject (`app` here), never `root`.
+  `build.gradle`, so the project root wins over the module.
+- **`require("metals").install()` must run *after* `initialize_or_attach()`,
+  never before.** `install()` reads a config cache that only
+  `initialize_or_attach` → `validate_config` fills; same-event autocmds fire in
+  registration order, and `scala.lua` had install registered first. Result:
+  `install.lua:91: attempt to index local 'config' (a nil value)` on **every**
+  Scala file, a red screen with `-- More --`, and no LSP — that was "nvim no
+  funciona con Scala" on the laptop (2026-09-17), where the metals binary had
+  never been downloaded. The fix keeps nvim-metals' intended order (attach,
+  which only validates when the binary is absent; then install), silences the
+  plugin's "use `:MetalsInstall`" warning for that one synchronous call, and
+  polls for the binary to attach the open buffers, since the async install
+  ends with a notification and nothing else. `install(true)` is avoided: it
+  blocks with a hard 60 s timeout and the cold download measured 23 s.
+- **Bloop's build target is the sbt project *id*, not its `name :=`.**
+  `lazy val root = (project in file(".")).settings(name := "app")` yields
+  `.bloop/root.json` + `root-test.json` (measured), while Gradle names it after
+  the subproject (`app`). The attach config therefore reads `.bloop/` at launch
+  (a function-valued field, resolved inside nvim-dap's coroutine so it can
+  `vim.ui.select` when there are several) instead of hardcoding either. The
+  laptop's tree is overwhelmingly sbt (304 `.scala`, Scala 3.8.1 and 2.13.18);
+  the desktop's is Gradle.
+- **The `lang.scala` extra sets `statusBarProvider = "off"`**, so a 20-30 s
+  sbt import is dead silence and reads as a hang. `scala.lua` turns it `"on"`
+  and lualine shows `vim.g.metals_status`. Scala **3.8.1** logs two warnings
+  that are not config — no expression compiler or frame decoder published for
+  that version yet (a step over from a `for` body lands in `Range.foreach`);
+  **2.13.18**, the course version, logs none.
 - **texlab ships chktex disabled** and the `lang.tex` extra only sets `keys`,
   so 544 `.tex` files had zero diagnostics while `chktex` sat in `/usr/bin`.
 - **Copilot's channel is chosen by `vim.g.ai_cmp`** (LazyVim default `true`),
