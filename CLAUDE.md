@@ -704,3 +704,18 @@ intentional — see `zed/README.md` for the magic comment that switches a single
 document to English. Until 2026-08-25 that configuration had **never run**,
 because the extension providing the server was not installed; it is now declared
 in `auto_install_extensions`.
+
+---
+
+## Orquestación por niveles
+
+Regla del workspace del 24 de septiembre de 2026. La sesión, que aquí corre con
+Opus, orquesta y decide con Carlos; cada subtarea baja al nivel más barato que
+la resuelve: `tarea-local` (el modelo de Ollama, manejado por Haiku),
+`tarea-basica` (Haiku), `tarea-media` (Sonnet) y, para sacar del hilo una
+subtarea que exige juicio, `tarea-compleja` (Opus). Un subagente sin modelo
+hereda el de la sesión, así que `Explore` y `general-purpose` no se usan a
+secas. Contrato de cada subtarea: rutas exactas, tajada de 30 KB o menos,
+archivo de salida y respuesta de diez líneas; commits, rastreadores y
+decisiones no se delegan. Los cuatro agentes están enlazados en `.claude/agents/`
+de este proyecto; la tabla completa está en `~/repositorios/work/CLAUDE.md`.
