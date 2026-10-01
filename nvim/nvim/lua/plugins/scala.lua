@@ -45,6 +45,27 @@ return {
       -- Decision de gusto, revertible; <leader>uh alterna todos los hints.
       metals_config.settings.showImplicitConversionsAndClasses = false
 
+      -- Formato al guardar sin un .scalafmt.conf por proyecto.
+      --
+      -- LazyVim formatea al guardar, y en Scala el que formatea es metals con
+      -- scalafmt. Scalafmt exige un archivo de configuracion: si no lo
+      -- encuentra, metals abre un menu
+      --
+      --   No .scalafmt.conf file detected. How would you like to proceed
+      --   1. Create .scalafmt.conf  2. Run anyway  3. Not now
+      --
+      -- que hay que contestar en los tres segundos que LazyVim le da al
+      -- formateo. Pasados esos, salta "LSP timeout", el archivo se guarda sin
+      -- formatear y el menu vuelve en el siguiente :w. Medido el 2026-10-01
+      -- sobre un .scala suelto: elegir "Create" a los seis segundos ya llegaba
+      -- tarde y no creaba nada.
+      --
+      -- Aqui se apunta a una configuracion unica en ~/.config/scalafmt/. Vale
+      -- para los proyectos sbt y para los .scala sueltos de ~/repositorios/clases,
+      -- que no tienen build y que metals trata como proyectos de scala-cli; y
+      -- deja los repositorios sin un .scalafmt.conf que no es suyo.
+      metals_config.settings.scalafmtConfigPath = vim.fn.expand("~/.config/scalafmt/.scalafmt.conf")
+
       -- Codelens: metals pinta "run | debug" encima de cada @main y
       -- "test | debug test" encima de cada suite, y con <leader>cc (LazyVim:
       -- vim.lsp.codelens.run) se ejecuta el que este bajo el cursor. LazyVim

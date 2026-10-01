@@ -19,6 +19,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | `zed/` | Zed editor (settings, keymap, tasks, debug, themes) |
 | `nvim/` | Neovim / LazyVim (config, plugins, `yamllint/config`) |
 | `yazi/` | Yazi file manager |
+| `scalafmt/` | scalafmt — the config Metals formats Scala with, from nvim |
 | `pdfgithub/` | Markdown → PDF pipeline (pandoc + XeLaTeX + mermaid) |
 | `obs/` | OBS Studio — virtual camera (v4l2loopback) for sharing the webcam |
 
