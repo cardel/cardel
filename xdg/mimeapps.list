@@ -1,7 +1,7 @@
 [Added Associations]
 application/pdf=com.github.xournalpp.xournalpp.desktop;com.google.Chrome.desktop;org.gnome.Evince.desktop;
 application/x-zerosize=geany.desktop;
-image/jpeg=chromium.desktop;feh.desktop;
+image/jpeg=feh.desktop;chromium.desktop;
 image/png=swayimg.desktop;gimp.desktop;
 message/rfc822=vivaldi-stable.desktop;
 text/csv=libreoffice-calc.desktop;geany.desktop;
@@ -17,3 +17,4 @@ inode/directory=yazi.desktop;
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop;
 x-scheme-handler/terminal=Alacritty.desktop;
 application/zip=userapp-7zip-DVHYU3.desktop
+image/jpeg=chromium.desktop
