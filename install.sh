@@ -30,6 +30,7 @@ declare -A INSTALADORES=(
   [zsh]="config/oh-my-zsh/install.sh"
   [obs]="obs/install.sh"
   [zed]="zed/install.sh"
+  [scalafmt]="scalafmt/install.sh"
 )
 
 # Fuera de --all: requieren una decision antes de sobrescribir, o sudo.
@@ -50,6 +51,7 @@ declare -A DESTINOS=(
   [zsh]="$HOME/.zshrc"
   [obs]="/etc/modprobe.d/v4l2loopback.conf"
   [zed]="$CONF/zed/settings.json"
+  [scalafmt]="$CONF/scalafmt"
 )
 
 # nombre -> lista de paquetes del sistema que esa herramienta da por hechos.
