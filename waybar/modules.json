@@ -1,0 +1,141 @@
+{
+  "hyprland/workspaces": {
+    "format": "{name}",
+    // Los numeros se pintan existan o no los escritorios. Sin esto solo
+    // aparecen los que tienen ventanas: recien arrancado eso es UN numero, y
+    // en el arranque donde el modulo se queda vacio, ninguno.
+    "persistent-workspaces": { "*": [1, 2, 3, 4, 5] },
+    // Sin filtrar por monitor. En un portatil de una pantalla no cambia lo que
+    // se ve, pero quita de en medio el emparejamiento por nombre de salida,
+    // que es lo unico que explica que el modulo arrancara vivo y vacio.
+    "all-outputs": true,
+    "on-click": "activate",
+    "on-scroll-up": "hyprctl dispatch workspace e+1",
+    "on-scroll-down": "hyprctl dispatch workspace e-1"
+  },
+  "group/audio": {
+    "orientation": "horizontal",
+    "modules": [
+      "pulseaudio",
+      "pulseaudio#microphone"
+    ]
+  },
+  "clock": {
+    "format": " {:%R}",
+    "tooltip-format": "{calendar}",
+    "format-alt": " {:%A, %d %B, %R}"
+  },
+  "hyprland/window": {
+    "format": "{}",
+    "separate-outputs": true,
+    "rewrite": {
+      "win11(.*)": " ",
+      "(.*) - Rnote$": " ",
+      "(.*) - Brave$": " $1",
+      "(.*) - qutebrowser$": " $1",
+      "nvim (.*)": "  $1",
+      "nvim": " ",
+      "System Monitor": " ",
+      "Eye of GNOME": " ",
+      "Catfish": " ",
+      "Bluetooth Devices": " ",
+      "Network Connections": " ",
+      "nmtui(.*)": " ",
+      "pulsemixer": " ",
+      "Volume Control": " ",
+      "ROG Control Center": "󰌢 ",
+      "Audacity": "󰋌 ",
+      "Qalculate!": "󰃬 ",
+      "Krita": " ",
+      "Lutris": " ",
+      "uGet": " ",
+      "nvtop": "󰡁 ",
+      "wdisplays": "󱎴 ",
+      "vim (.*)": "  $1",
+      "vim": "",
+      "vi (.*)": "  $1",
+      "vi": " ",
+      "cava(.*)": " ",
+      "nwg-look": " ",
+      "Kvantum Manager": " ",
+      "Customize Look and Feel": " ",
+      "Qt5 Configuration Tool": " ",
+      "Qt6 Configuration Tool": " ",
+      "Virtual Machine Manager": " ",
+      "MySQL Workbench": " ",
+      "htop(.*)": " ",
+      "btop(.*)": " ",
+      "~(.*)": " ",
+      "/(.*)": " ",
+      "yazi(.*)": "󰉋 $1",
+      "(.*)Steam": "󰓓 ",
+      "bluetuith": " "
+    },
+    "max-length": 50
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}% ",
+    "format-muted": "  ",
+    "format-icons": {
+      "default": [
+        "🔈",
+        "🔉",
+        "🔊"
+      ]
+    },
+    "scroll-step": 5.0,
+    "on-click": "$TERMINAL --app-id floating -e pulsemixer || $TERMINAL -e pulsemixer",
+    "on-click-right": "volume.sh --toggle",
+    "on-scroll-up": "volume.sh --inc",
+    "on-scroll-down": "volume.sh --dec",
+    "tooltip-format": "{icon} {desc} | {volume}% ",
+    "smooth-scrolling-threshold": 1
+  },
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "format-source": "🎙️ {volume}%",
+    "format-source-muted": " ",
+    "on-click": "$TERMINAL --app-id floating -e pulsemixer || $TERMINAL -e pulsemixer",
+    "on-click-right": "volume.sh --toggle-mic",
+    "on-scroll-up": "volume.sh --inc-mic",
+    "on-scroll-down": "volume.sh --dec-mic",
+    "tooltip": false,
+    "smooth-scrolling-threshold": 1
+  },
+  "tray": {
+    "icon-size": 15,
+    "spacing": 8
+  },
+  "battery": {
+    "format": "{icon} {capacity}% ",
+    "format-icons": [
+      "🪫",
+      "🔋"
+    ],
+    "format-time": "{H}h{M}m",
+    "format-charging": "⚡ {capacity}% ",
+    "format-not-charging": "⚡ {capacity}% ",
+    "tooltip": "{time}",
+    "interval": 30,
+    "on-click-right": "actions.sh power",
+    "states": {
+      "warning": 30,
+      "critical": 10
+    }
+  },
+  "network": {
+    "format": "{ifname}",
+    "format-wifi": "{essid}({frequency} GHz) ({signalStrength}%)  ",
+    "format-ethernet": "{ifname} 🌐",
+    "format-disconnected": "",
+    "tooltip-format": "{ipaddr}/{cidr}\n{ifname} via {gwaddr}",
+    "on-click": "$TERMINAL --app-id=floating --title=nmtui -e nmtui || $TERMINAL -e nmtui",
+    "on-click-right": "networkmanager_dmenu -w 35",
+    "max-length": 50
+},
+  "custom/separator": {
+    "format": " | ",
+    "interval": "once",
+    "tooltip": false
+  }
+}

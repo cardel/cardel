@@ -263,10 +263,79 @@ separado:
 | `dap.lua` | `debugpy` y `bash-debug-adapter` en mason; `<leader>td` para depurar el test bajo el cursor |
 | `linting.lua` | yamllint para YAML, actionlint restringido a `.github/workflows/`, shellcheck explícito |
 | `racket.lua` | parser de treesitter, `racket_langserver`, paredit en `.rkt` |
+| `python.lua` | la raíz del proyecto deja de escaparse a `~/repositorios`, y pyright, el depurador y los tests usan el `.venv` del proyecto |
 | `scala.lua` | baja metals solo la primera vez y lo engancha; arregla el choque metals/jdtls y el atajo roto del extra; estado en lualine, codelens `run \| debug`, árbol de metals (`<leader>mt`); *attach* al puerto 5005 con el build target leído de `.bloop/` |
 
 Y `yamllint/config`, que baja el ruido de las reglas de fábrica. Un `.yamllint`
 dentro de un proyecto sigue teniendo prioridad sobre él.
+
+### Python: la raíz del proyecto y el entorno virtual (2026-10-08)
+
+El extra `lang.python` ya estaba activo y todo instalado — pyright y ruff en
+mason, `venv-selector`, `neotest-python`, `nvim-dap-python`. Aun así, abriendo
+`~/repositorios/work/videos/split_c32_4.py`:
+
+```
+root=/home/cardel/repositorios      pythonPath=nil
+l101 [Pyright] Import "anthropic" could not be resolved
+```
+
+Dos fallos distintos, y ninguno del extra.
+
+**La raíz se escapaba a la carpeta de todos los repos.** lspconfig declara para
+pyright `root_markers = { 'pyrightconfig.json', 'pyproject.toml', 'setup.py',
+'setup.cfg', 'requirements.txt', 'Pipfile', '.git' }`, y en una lista plana
+**manda la prioridad, no la cercanía**. Hay un `~/repositorios/requirements.txt`
+de 33 bytes; `work/videos` cuelga del repo git `~/repositorios/work`, que está un
+nivel **más cerca**, y perdió igualmente porque `.git` va después en la lista. La
+raíz del proyecto pasaron a ser los **52.739** archivos `.py` de `~/repositorios`.
+
+La corrección no es borrar ese archivo, que es legítimo, sino ordenar por
+niveles: `root_markers` acepta listas anidadas y cada sublista es un escalón de
+prioridad (`:h lsp-root_markers`). Quedan tres: marcadores de proyecto Python de
+verdad (con `.venv` y `venv` entre ellos, porque una carpeta con su propio
+entorno *es* la raíz), luego `.git` como borde del repositorio, y `requirements.txt`
+el último — sigue sirviendo para un proyecto suelto sin git, pero ya no puede
+secuestrar nada desde arriba.
+
+**pyright usaba el Python del sistema.** Lo engañoso es que de los tres imports
+de terceros de ese archivo solo se quejaba uno: `pydantic` y `whisper` están
+en `/usr/lib/python3.14/site-packages` y resolvían por casualidad. Con uno de
+tres fallando, esto se lee como "falta instalar anthropic" y no como "pyright no
+mira el venv". `:VenvSelect` (`<leader>cv`) ya existía, pero hay que acordarse de
+pulsarlo en cada proyecto y cada arranque.
+
+Dos trampas al implementarlo, las dos medidas:
+
+- **Tiene que ser `on_init`, no `before_init`.** Con `before_init` el
+  `pythonPath` no llegaba nunca: el cliente copia `config.settings` al
+  construirse y `before_init` corre después, sobre una tabla que ya nadie mira.
+  `on_init` recibe el cliente ya hecho y permite avisar al servidor con
+  `workspace/didChangeConfiguration`.
+- **`dirname` sobre un directorio se salta un nivel.** La función que busca el
+  venv recibe a veces un archivo (el buffer) y a veces un directorio (la raíz del
+  LSP). Aplicarle `dirname` siempre hacía que con `root_dir = .../work/videos`
+  empezara a mirar en `.../work`, justo por encima del `.venv`. Síntoma:
+  `pythonPath` acababa en `/usr/bin/python3`, el último recurso.
+
+Comprobado de punta a punta sobre ese mismo archivo: `pythonPath` apunta al
+`.venv`, **0 imports sin resolver** (antes 1), hover sobre `anthropic` responde y
+el autocompletado devuelve 267 propuestas.
+
+**El depurador y los tests heredan el arreglo.** `nvim-dap-python` ya busca el
+venv solo, pero entre sus candidatos están los `root_dir` de los clientes LSP —
+o sea que con la raíz rota buscaba `~/repositorios/.venv`, que no existe, y caía
+al Python del sistema. Se declara además `resolve_python` para que no dependa de
+cuál sea el `cwd` al abrir el editor. Medido en un proyecto de prueba con `.venv`
+y **sin `debugpy` dentro**: la sesión para en el breakpoint, `Scopes` muestra
+`acc`, `i` y `n`, y `sys.executable` del proceso depurado es el del venv — el
+adaptador de mason inyecta debugpy, no hace falta instalarlo en cada entorno.
+Para los tests, `neotest-python` acepta una función en `python`; se comprobó
+haciendo que el propio test escribiera `sys.executable` en un archivo.
+
+Lo que **no** estaba roto, y por eso no se tocó: el formateo. `conform` no tiene
+entrada para Python, pero ruff formatea por LSP (`documentFormattingProvider`),
+así que `<leader>cf` ya funcionaba.
 
 Cuatro detalles que se comprobaron a mano, porque las recetas que circulan los
 tienen mal o porque los extras de LazyVim no encajan con el resto de esta

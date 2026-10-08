@@ -1,0 +1,12 @@
+# Paquetes que esta configuracion da por hechos.
+# Formato y tipos de comprobacion: ver alacritty/paquetes.txt
+# Lista completa: ../install.sh --paquetes
+
+waybar|waybar|la barra. Medido con 0.15.0
+ttf-jetbrains-mono-nerd|@font:JetBrainsMono Nerd Font|la familia de style.css. Es la variante PROPORCIONAL, no la Mono que usan foot y alacritty: una barra no es una rejilla de celdas. Ojo con el nombre, "JetBrains Mono NF" con espacio no existe y fontconfig lo tapaba resolviendo por parecido
+hyprland|hyprctl|los modulos hyprland/workspaces y hyprland/window hablan con el compositor por sus sockets; on-scroll llama a hyprctl
+
+# python-pywal NO se declara aqui a proposito: style.css hace @import de
+# ~/.cache/wal/colors-waybar.css, pero ese import es opcional para GTK -- si el
+# archivo falta, la barra arranca igual con los colores de fabrica, solo que sin
+# la paleta del fondo de pantalla.

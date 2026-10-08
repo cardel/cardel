@@ -31,6 +31,7 @@ declare -A INSTALADORES=(
   [obs]="obs/install.sh"
   [zed]="zed/install.sh"
   [scalafmt]="scalafmt/install.sh"
+  [waybar]="waybar/install.sh"
 )
 
 # Fuera de --all: requieren una decision antes de sobrescribir, o sudo.
@@ -52,6 +53,9 @@ declare -A DESTINOS=(
   [obs]="/etc/modprobe.d/v4l2loopback.conf"
   [zed]="$CONF/zed/settings.json"
   [scalafmt]="$CONF/scalafmt"
+  # waybar: solo los dos archivos neutros. configs/*.json es uno por maquina
+  # (sobremesa / portatil), como el bloque de monitores de hypr. Ver waybar/README.md.
+  [waybar]="$CONF/waybar/modules.json"
 )
 
 # nombre -> lista de paquetes del sistema que esa herramienta da por hechos.
@@ -68,6 +72,7 @@ declare -A LISTAS=(
   [obs]="obs/paquetes.txt"
   [zed]="zed/paquetes.txt"
   [pdfgithub]="pdfgithub/paquetes.txt"
+  [waybar]="waybar/paquetes.txt"
 )
 
 # Herramientas que se instalan copiando en vez de enlazando. Para estas, "no es

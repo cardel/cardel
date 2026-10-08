@@ -20,6 +20,7 @@ Personal dotfiles for an **Arch Linux + Wayland** setup (Hyprland primary; i3/X1
 | `nvim/` | Neovim / LazyVim (config, plugins, `yamllint/config`) |
 | `yazi/` | Yazi file manager |
 | `scalafmt/` | scalafmt — the config Metals formats Scala with, from nvim |
+| `waybar/` | waybar — the Hyprland bar (`modules.json` + `style.css` only) |
 | `pdfgithub/` | Markdown → PDF pipeline (pandoc + XeLaTeX + mermaid) |
 | `obs/` | OBS Studio — virtual camera (v4l2loopback) for sharing the webcam |
 
@@ -265,6 +266,32 @@ Language-server traps found by measurement, each one silent:
   that are not config — no expression compiler or frame decoder published for
   that version yet (a step over from a `for` body lands in `Range.foreach`);
   **2.13.18**, the course version, logs none.
+- **pyright's project root escaped to `~/repositorios`, the folder holding
+  *every* repo.** lspconfig's `root_markers` for pyright is a flat list, and a
+  flat list is ranked by **priority, not proximity**: a 33-byte
+  `~/repositorios/requirements.txt` beat the `.git` of `~/repositorios/work`
+  one level nearer, because `requirements.txt` is listed before `.git`. The
+  root became 52,739 `.py` files. Fixed with nested `root_markers`
+  (`:h lsp-root_markers`), where each sublist is a priority tier: real Python
+  project markers (`.venv` and `venv` among them — a folder with its own
+  environment *is* the root), then `.git` as the repo boundary, then
+  `requirements.txt` last, so it can no longer hijack from above.
+- **pyright used the system Python, and only one import in three complained.**
+  `pydantic` and `whisper` live in `/usr/lib/python3.14/site-packages` and
+  resolved by accident; only `anthropic` was venv-only. One failure out of
+  three reads as "that package isn't installed", not as "the venv is being
+  ignored". `python.lua` resolves the interpreter from the project and hands it
+  to pyright, `nvim-dap-python` (`resolve_python`) and `neotest-python`. Two
+  traps in doing it: it must be **`on_init`, not `before_init`** (the client
+  copies `config.settings` when it is built, so a `before_init` mutation lands
+  on a table nobody reads again), and **`dirname` on a directory skips a
+  level** — the venv finder gets a file from dap and a directory from the LSP
+  root, and treating both as files made it start one level above the `.venv`.
+  Measured end to end: 0 unresolved imports, a debug session whose
+  `sys.executable` is the venv's (mason's adapter injects debugpy, so it need
+  not be installed in each environment), and neotest running tests with it.
+  **Formatting was never broken** — conform has no Python entry, but ruff
+  formats over LSP.
 - **texlab ships chktex disabled** and the `lang.tex` extra only sets `keys`,
   so 544 `.tex` files had zero diagnostics while `chktex` sat in `/usr/bin`.
 - **Copilot's channel is chosen by `vim.g.ai_cmp`** (LazyVim default `true`),
@@ -595,6 +622,51 @@ Note the live file here is a **copy**, not a symlink (see the table above), so
 editing the repo changes nothing until it is copied to
 `~/.config/hypr/user_configs/overrides.conf` and `hyprctl reload` runs.
 
+### waybar showed no workspace numbers, and the module was alive but deaf (`waybar/`)
+
+Measured on **waybar 0.15.0**, Hyprland 0.56.2. Full evidence in
+`waybar/README.md`.
+
+- **The centre of the bar was empty — not "sometimes wrong", empty.** Captured
+  with `grim` and averaged: flat background, no glyphs, while the left and
+  right modules rendered fine. Switching workspaces changed **not one pixel**
+  (identical stddev before and after), so the module was not receiving events
+  either. `kill -SIGUSR2` (reload) fixed it instantly. A second waybar launched
+  by hand with the *same* config and CSS showed the numbers. So neither the
+  module nor the style was wrong — only the instance that started with the
+  session.
+- **The obvious cause was wrong, and that is worth keeping.** Hyprland's two
+  sockets do not appear together: `.socket2.sock` (events) at 14:04:43.812,
+  `.socket.sock` (commands) at 14:04:44.666, and waybar started at 14:04:44 —
+  inside that 854 ms gap. Simulating exactly that (a fake instance symlinking
+  the real event socket, with no command socket) showed waybar **disables both**
+  hyprland modules and says so: `Disabling module "hyprland/window"…`. In the
+  real failure `hyprland/window` worked. **The precise mechanism is still
+  unidentified**; the surviving candidate is output matching, since
+  `hyprland/workspaces` filters workspaces by the bar's monitor and
+  `hyprland/window` filters by nothing — hence `all-outputs`.
+- **`persistent-workspaces` must use the explicit list, not the count.** With
+  `{"*": 5}` the bar drew **ten** buttons while Hyprland had six; with
+  `{"*": [1,2,3,4,5]}` it draws exactly those plus whatever really exists.
+  Measured twice, including after a full restart, so they were not stale
+  buttons from a reload. It also makes the buttons come from config rather than
+  from querying the compositor, so they appear even if that query fails.
+- **`style.css` asked for a font that does not exist.** `"JetBrains Mono NF"`
+  (space between *JetBrains* and *Mono*) matches **zero** installed families;
+  fontconfig resolved it by similarity to `JetBrainsMono Nerd Font`. Exactly
+  foot's old `JetBrainsMonoNF` bug, same rule: compare what `fc-match` returns
+  against what you asked for. Now declared explicitly — and deliberately the
+  **proportional** variant, unlike foot and alacritty, because a bar is not a
+  cell grid.
+- **Linking here is safe, unlike `foot.ini`.** `refresh.sh` touches waybar but
+  only restarts it (`pkill waybar; waybar &`); nothing redirects into these two
+  files with `>` and no pywal template targets them — checked before linking.
+  That restart is also why the bar "usually" misbehaved but not always: any
+  theme refresh (`SUPER+Shift+R`) gives it a second, healthy start.
+- **`SIGUSR1` is not the reload signal** — it hides and shows the bar, and it is
+  what `SUPER+B` sends. `SIGUSR2` reloads. `configs/*.json` stays out of the
+  repo: one per machine, same reason as hypr's monitor block.
+
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.
 
@@ -646,7 +718,7 @@ The root script aggregates them:
 Register a new tool in the `LISTAS` table. `pdfgithub` is in there despite
 having no installer, because it does have dependencies.
 
-Verified: all 62 required packages and the 4 optional ones resolve in the
+Verified: all 63 required packages and the 4 optional ones resolve in the
 official repos — **nothing here comes from the AUR**. Three names do not match
 their binary and cost a while if copied wrong: pandoc's package is
 **`pandoc-cli`**, **`chktex` is not a package** (it arrives inside
