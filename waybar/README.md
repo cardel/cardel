@@ -67,7 +67,10 @@ que depende del arranque: la instancia de la sesion falla y cualquier instancia
 posterior funciona. El candidato que queda en pie es el emparejamiento por
 salida: `hyprland/workspaces` filtra los escritorios por el monitor de la barra,
 y `hyprland/window` no filtra por nada — lo que explicaria que uno muera y el
-otro no. De ahi sale `all-outputs` abajo.
+otro no.
+
+Como la causa no se conoce, el arreglo no la ataca: `arranque.sh` espera a que
+el compositor este entero y manda una recarga. Ver mas abajo.
 
 Eso explica tambien el "no me **suele** mostrar": `refresh.sh` (`SUPER+Shift+R`)
 hace `pkill waybar; waybar &` en su linea 136, asi que cualquier cambio de tema
@@ -78,35 +81,53 @@ reinicia la barra y ese arranque si sale bien.
 ```json
 "hyprland/workspaces": {
   "format": "{name}",
-  "persistent-workspaces": { "*": [1, 2, 3, 4, 5] },
-  "all-outputs": true,
+  "all-outputs": false,
   "on-click": "activate",
   "on-scroll-up":   "hyprctl dispatch workspace e+1",
   "on-scroll-down": "hyprctl dispatch workspace e-1"
 }
 ```
 
-- **`persistent-workspaces`** pinta los numeros existan o no esos escritorios.
-  Sin esto, waybar solo muestra los que tienen ventanas: recien iniciada la
-  sesion eso es **un** boton, lo que ya de por si se lee como "no muestra los
-  escritorios". Ademas los botones salen de la configuracion, no de preguntarle
-  al compositor, asi que aparecen aunque la consulta inicial falle.
+- **Solo los escritorios que existen.** Nada de `persistent-workspaces`. Se
+  probo primero al reves, fijando `1..5` siempre, y es peor: pinta escritorios
+  vacios que no se estan usando.
 
-- **La lista explicita `[1,2,3,4,5]` y no el numero `5`.** Con `{"*": 5}`, que
-  es la forma corta, la barra pinto **diez** botones (`1..10`) mientras Hyprland
-  solo tenia `{1,2,3,4,5,8}`. Medido dos veces, tambien tras reiniciar waybar
-  del todo, asi que no eran botones viejos de una recarga. Con la lista sale
-  exactamente lo que dice la lista, mas los escritorios que existan de verdad
-  por encima: `1 2 3 4 5 8`.
-
-- **`all-outputs`** quita el filtrado por monitor. En un portatil de una sola
-  pantalla no cambia nada de lo que se ve, y elimina el unico mecanismo que
-  explicaria el fallo de arranque.
+- **`all-outputs: false`**, el valor de fabrica, y tambien se probo al reves.
+  Con `true` cada barra muestra los escritorios de **todas** las salidas; con
+  dos pantallas eso son dos barras con los mismos numeros y no hay forma de ver
+  de un vistazo en cual estas. Con `false` cada barra filtra por su monitor.
+  Medido con DP-1 en el escritorio 1 y eDP-1 en el 2: la barra del portatil
+  muestra `2` resaltado y la de DP-1 muestra `1` en gris. waybar crea una barra
+  por salida, asi que esto aplica a cada una.
 
 - **`on-click` / `on-scroll`** no existian: los botones no se podian pulsar.
 
-Cinco fijos porque es lo que se usa: en el momento de medir habia ventanas en
-`1, 2, 3, 4, 5` y `8`.
+Comprobado en vivo abriendo una ventana en el escritorio 4 del portatil — la
+barra pasa a `2 4` con el 4 resaltado — y cerrandola — vuelve a `2` — sin que el
+`1` de la otra pantalla aparezca en ningun momento.
+
+Nota sobre `persistent-workspaces`, por si alguna vez se vuelve a querer: hay
+que darle la **lista explicita**, no el numero. Con `{"*": 5}` la barra pinto
+**diez** botones mientras Hyprland tenia seis; con `{"*": [1,2,3,4,5]}` sale
+exactamente lo que dice la lista. Medido dos veces, tambien tras reiniciar
+waybar del todo, asi que no eran botones viejos de una recarga.
+
+### Y `arranque.sh`, para el fallo de arranque
+
+Con los escritorios dinamicos no queda ninguna red: si el modulo arranca vacio,
+la barra se queda sin numeros, que es el sintoma original. Por eso
+`hypr/overrides.conf` lanza
+
+```
+exec-once = waybar-arranque.sh
+```
+
+que espera a que `hyprctl` conteste, espera a que waybar exista, deja 1,5 s de
+margen y manda **un** `SIGUSR2`. Tarda 1,7 s medidos y recarga sin reiniciar
+(mismo PID). No arregla la causa — no se conoce — pero es lo unico que se sabe
+que funciona, y es lo que ya hacia sin querer `refresh.sh` al cambiar de tema.
+
+Si algun dia se identifica la causa, se quitan esa linea y el script.
 
 ## La fuente que se pedia no existe
 

@@ -3,6 +3,7 @@
 #
 #   modules.json -> $XDG_CONFIG_HOME/waybar/modules.json
 #   style.css    -> $XDG_CONFIG_HOME/waybar/style.css
+#   arranque.sh  -> ~/.local/bin/waybar-arranque.sh
 #
 # Se ejecuta desde este directorio:  ./install.sh
 # Resuelve su propia ruta, asi que el repo puede vivir en cualquier sitio.
@@ -50,6 +51,21 @@ for archivo in modules.json style.css; do
   ln -sfn -- "$src" "$dst"
   echo "enlazado $dst -> $src"
 done
+
+# arranque.sh lo llama hypr/overrides.conf con un exec-once. Va a ~/.local/bin
+# porque es donde Hyprland resuelve los nombres sueltos de sus exec-once y sus
+# binds (volume.sh, refresh.sh, gromit.sh viven ahi). Se enlaza con el prefijo
+# waybar- para que se vea de quien es: en esa carpeta hay scripts de varias
+# herramientas y "arranque.sh" a secas no diria nada.
+BIN_DIR="$HOME/.local/bin"
+mkdir -p -- "$BIN_DIR"
+if [[ -e "$BIN_DIR/waybar-arranque.sh" && ! -L "$BIN_DIR/waybar-arranque.sh" ]]; then
+  backup="$BIN_DIR/waybar-arranque.sh.bak.$(date +%Y%m%d-%H%M%S)"
+  mv -- "$BIN_DIR/waybar-arranque.sh" "$backup"
+  echo "respaldado -> $backup"
+fi
+ln -sfn -- "$SRC_DIR/arranque.sh" "$BIN_DIR/waybar-arranque.sh"
+echo "enlazado $BIN_DIR/waybar-arranque.sh -> $SRC_DIR/arranque.sh"
 
 # waybar relee la configuracion con SIGUSR2; no hace falta cerrar la sesion.
 # SIGUSR1 NO sirve aqui: esa es la que oculta y muestra la barra (SUPER+B).

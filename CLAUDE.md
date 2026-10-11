@@ -644,13 +644,20 @@ Measured on **waybar 0.15.0**, Hyprland 0.56.2. Full evidence in
   real failure `hyprland/window` worked. **The precise mechanism is still
   unidentified**; the surviving candidate is output matching, since
   `hyprland/workspaces` filters workspaces by the bar's monitor and
-  `hyprland/window` filters by nothing — hence `all-outputs`.
-- **`persistent-workspaces` must use the explicit list, not the count.** With
-  `{"*": 5}` the bar drew **ten** buttons while Hyprland had six; with
-  `{"*": [1,2,3,4,5]}` it draws exactly those plus whatever really exists.
-  Measured twice, including after a full restart, so they were not stale
-  buttons from a reload. It also makes the buttons come from config rather than
-  from querying the compositor, so they appear even if that query fails.
+  `hyprland/window` filters by nothing. Since the cause is unknown, the fix does
+  not target it: **`waybar/arranque.sh`** (an `exec-once` in
+  `hypr/overrides.conf`) waits for `hyprctl` to answer, waits for waybar to
+  exist, then sends one `SIGUSR2`. 1.7 s measured, reloads without restarting
+  (same PID). It is what `refresh.sh` was already doing by accident.
+- **Workspaces are dynamic and per-monitor, and both were tried the other way
+  first.** `persistent-workspaces` pinning `1..5` paints workspaces that are
+  not in use, and `all-outputs: true` makes *every* bar show *every* output's
+  workspaces — with two screens that is two bars showing the same numbers, so
+  you cannot tell which one you are on. Both removed: `all-outputs: false` (the
+  default) makes each bar filter by its own monitor, measured with DP-1 on
+  workspace 1 and eDP-1 on 2. If persistent workspaces are ever wanted again,
+  they need the **explicit list**, not the count: `{"*": 5}` drew **ten**
+  buttons while Hyprland had six, `{"*": [1,2,3,4,5]}` draws exactly those.
 - **`style.css` asked for a font that does not exist.** `"JetBrains Mono NF"`
   (space between *JetBrains* and *Mono*) matches **zero** installed families;
   fontconfig resolved it by similarity to `JetBrainsMono Nerd Font`. Exactly
@@ -666,6 +673,28 @@ Measured on **waybar 0.15.0**, Hyprland 0.56.2. Full evidence in
 - **`SIGUSR1` is not the reload signal** — it hides and shows the bar, and it is
   what `SUPER+B` sends. `SIGUSR2` reloads. `configs/*.json` stays out of the
   repo: one per machine, same reason as hypr's monitor block.
+
+### `highrr` picked 800x600 on the USB-C screen, and `local.conf` was never read (`hypr/`)
+
+Two separate defects stacked, and the second hid the fix for the first.
+
+- **`highrr` means highest refresh rate, not best mode.** JaKooLit's
+  `hyprdevices.conf` ships the catch-all `monitor= , highrr, auto, auto`. The
+  portable USB-C screen (RTD P156FT, 15.6") advertises 1920x1080 at 60.00,
+  59.94 and 50.00 Hz — and **800x600 at 60.32 Hz**. So `highrr` obeyed
+  literally and chose 800x600; `aquamarine` logged `Modesetting DP-1 with
+  800x600@60.32Hz`. An explicit per-monitor rule beats the catch-all.
+- **The live `overrides.conf` did not `source = local.conf`.** The repo's
+  version does, and `hypr/install.sh` even creates the file — but the laptop's
+  live copy had drifted and dropped the line, so `local.conf` existed and was
+  never read. The monitor rule written there did nothing, and
+  `hyprctl reload` kept reverting to 800x600 while `hyprctl keyword monitor`
+  worked, which looks like the rule being wrong rather than unread. Restored in
+  the live copy; `monitor = DP-1, 1920x1080@60, 1920x0, 1` now survives a
+  reload. This is exactly the copy-vs-symlink trap at the top of this file.
+
+waybar follows the resolution change on its own: the DP-1 bar went from 790 to
+1910 px wide with no action.
 
 ### PDF generation stack (`pdfgithub/`)
 `generate-pdf.sh` requires: `pandoc`, `xelatex` (TeX Live), `mermaid-cli` (`mmdc`), and `chromium`. The Puppeteer config is read from `/etc/mermaid-puppeteer.json` or `/etc/puppeteer-config.json`; the script generates a fallback in `/tmp/` if neither exists. Use named colors only in LaTeX — hex values break `xcolor`.

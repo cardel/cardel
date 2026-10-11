@@ -1,14 +1,22 @@
 {
   "hyprland/workspaces": {
     "format": "{name}",
-    // Los numeros se pintan existan o no los escritorios. Sin esto solo
-    // aparecen los que tienen ventanas: recien arrancado eso es UN numero, y
-    // en el arranque donde el modulo se queda vacio, ninguno.
-    "persistent-workspaces": { "*": [1, 2, 3, 4, 5] },
-    // Sin filtrar por monitor. En un portatil de una pantalla no cambia lo que
-    // se ve, pero quita de en medio el emparejamiento por nombre de salida,
-    // que es lo unico que explica que el modulo arrancara vivo y vacio.
-    "all-outputs": true,
+    // Solo los escritorios que existen, y solo los de ESTA pantalla.
+    //
+    // Las dos cosas son a proposito y se probaron al reves primero:
+    //
+    //   persistent-workspaces fijaba 1..5 siempre. Quitado: molesta mas de lo
+    //   que ayuda, porque pinta escritorios vacios que no se estan usando.
+    //
+    //   all-outputs=true hacia que cada barra mostrara los escritorios de
+    //   TODAS las salidas. Con dos pantallas eso significa dos barras con los
+    //   mismos numeros, lo que hace imposible ver de un vistazo en cual estas.
+    //   Con false (el valor de fabrica) cada barra filtra por su monitor:
+    //   medido con DP-1 en el escritorio 1 y eDP-1 en el 2, cada barra muestra
+    //   el suyo.
+    //
+    // waybar crea una barra por salida, asi que esto se aplica a cada una.
+    "all-outputs": false,
     "on-click": "activate",
     "on-scroll-up": "hyprctl dispatch workspace e+1",
     "on-scroll-down": "hyprctl dispatch workspace e-1"
