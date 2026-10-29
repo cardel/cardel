@@ -1,1 +1,0 @@
-../../../work/papers-project/.claude/agents/tarea-compleja.md

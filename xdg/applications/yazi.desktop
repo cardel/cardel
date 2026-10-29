@@ -1,7 +1,0 @@
-[Desktop Entry]
-Exec=yazi %f
-Name=Yazi
-Icon=yazi
-Type=Application
-Terminal=true
-MimeType=inode/directory
