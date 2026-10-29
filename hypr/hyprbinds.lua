@@ -52,7 +52,7 @@ hl.bind("SUPER + SHIFT + Y", hl.dsp.exec_cmd("killall mpv"), { description = "Te
 -------------------------------
 
 hl.bind("CTRL + ALT + Delete", hl.dsp.exec_cmd("actions.sh power"), { description = "Menu de apagado" })
-hl.bind("CTRL + ALT + L", hl.dsp.exec_cmd("hyprlock"), { description = "Bloquear pantalla" })
+hl.bind("CTRL + ALT + L", hl.dsp.exec_cmd("bloquear.sh"), { description = "Bloquear pantalla" })
 
 -- El .conf llamaba a "Refresh.sh" con mayuscula y el script es refresh.sh, asi
 -- que este atajo no hacia nada en este portatil. Corregido al migrar.
@@ -181,7 +181,7 @@ hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd("brightness.sh --dec --keys"), 
 hl.bind("XF86TouchpadToggle", hl.dsp.exec_cmd("touchpad.sh"), { locked = true, description = "Alternar touchpad" })
 
 -- Bloquear al suspender
-hl.bind("XF86Sleep", hl.dsp.exec_cmd("hyprlock"), { locked = true, description = "Bloquear al suspender" })
+hl.bind("XF86Sleep", hl.dsp.exec_cmd("bloquear.sh"), { locked = true, description = "Bloquear al suspender" })
 
 -- Asus
 hl.bind("XF86Launch3", hl.dsp.exec_cmd("asusctl led-mode -n"), { locked = true, description = "Asus aura" })
