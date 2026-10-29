@@ -16,7 +16,26 @@ hl.env("GRIMBLAST_EDITOR", "satty --filename")
 
 -- PATH. En el .conf esto decia "$HOME/.local/bin:$PATH" y dependia de que
 -- alguien expandiera las dos variables. Aqui se arma en Lua y queda explicito.
-hl.env("PATH", os.getenv("HOME") .. "/.local/bin:" .. (os.getenv("PATH") or "/usr/local/bin:/usr/bin:/bin"))
+--
+-- Y se quitan los repetidos, que no es cosmetico: hl.env corre en CADA recarga
+-- de configuracion, asi que anteponer la carpeta sin mirar la metia otra vez
+-- cada vez. Medido el 29 de octubre de 2026 tras una tarde de recargas:
+-- ~/.local/bin aparecia decenas de veces seguidas en el PATH de los procesos
+-- hijos. Funciona igual, pero crece sin tope y no hay razon para dejarlo.
+local function path_con_bin_propio()
+    local bin = os.getenv("HOME") .. "/.local/bin"
+    local actual = os.getenv("PATH") or "/usr/local/bin:/usr/bin:/bin"
+    local vistos, partes = {}, {}
+    for parte in (bin .. ":" .. actual):gmatch("[^:]+") do
+        if not vistos[parte] then
+            vistos[parte] = true
+            partes[#partes + 1] = parte
+        end
+    end
+    return table.concat(partes, ":")
+end
+
+hl.env("PATH", path_con_bin_propio())
 
 -- Fzf
 hl.env("FZF_DEFAULT_COMMAND", "fd --type file --color=always")
