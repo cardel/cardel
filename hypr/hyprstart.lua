@@ -40,6 +40,15 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("waybar")
     hl.exec_cmd("waybar-arranque.sh")
 
+    -- Inactividad: apagar pantalla, bloquear y suspender. Su configuracion
+    -- esta en hypridle.conf, al lado de este archivo. Si el paquete no esta
+    -- instalado esto falla en silencio, que es lo que queremos.
+    hl.exec_cmd("hypridle")
+
+    -- Luz calida de noche. Necesita el paquete hyprsunset; si no esta, esto
+    -- falla en silencio y no pasa nada.
+    hl.exec_cmd("hyprsunset")
+
     hl.exec_cmd("pcloud")
 
     -- ProtonVPN: el binario es protonvpn-app, no proton-vpn. Ese nombre no

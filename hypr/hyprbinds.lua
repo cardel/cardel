@@ -32,6 +32,11 @@ hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(terminal .. " --app-id floating -e 
 -- que se oprimen las teclas cuenta y deja de comportarse como modificador.
 hl.bind("SUPER_L", hl.dsp.exec_cmd("pkill " .. menu .. " || " .. menu), { release = true, description = "Menu" })
 
+-- Y el mismo lanzador en una combinacion, para no depender de una sola tecla.
+-- El Win de este teclado ya se averio una vez (manda el evento WMI 0x4f en vez
+-- de su codigo) y con el se fue el lanzador entero.
+hl.bind("SUPER + D", hl.dsp.exec_cmd("pkill " .. menu .. " || " .. menu), { description = "Menu" })
+
 hl.bind("SUPER + P", hl.dsp.exec_cmd("actions.sh projector"), { description = "Menu de proyector" })
 hl.bind("SUPER + SHIFT + P", hl.dsp.exec_cmd("actions.sh player"), { description = "Menu de playerctl" })
 hl.bind("SUPER + Y", hl.dsp.exec_cmd('foot --title="Youtube Search" --app-id=floating -e ytfzf -ftT mpv'), { description = "Buscar en Youtube" })

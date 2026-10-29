@@ -5,6 +5,9 @@
 #   gromit.sh    -> ~/.local/bin/gromit.sh
 #   touchpad.sh  -> ~/.local/bin/touchpad.sh
 #   refresh.sh   -> ~/.local/bin/refresh.sh
+#   keybinds.sh  -> ~/.local/bin/keybinds.sh
+#   modo-grabacion.sh -> ~/.local/bin/modo-grabacion.sh
+#   hypridle.conf-> $XDG_CONFIG_HOME/hypr/hypridle.conf
 #
 # Se corre desde esta carpeta:  ./install.sh
 # Resuelve su propia ruta, asi que el repo puede vivir donde sea.
@@ -59,6 +62,12 @@ mkdir -p -- "$BIN_DIR"
 enlazar "$SRC_DIR/gromit.sh" "$BIN_DIR/gromit.sh"
 enlazar "$SRC_DIR/touchpad.sh" "$BIN_DIR/touchpad.sh"
 enlazar "$SRC_DIR/refresh.sh" "$BIN_DIR/refresh.sh"
+enlazar "$SRC_DIR/keybinds.sh" "$BIN_DIR/keybinds.sh"
+enlazar "$SRC_DIR/modo-grabacion.sh" "$BIN_DIR/modo-grabacion.sh"
+
+# hypridle lee su propia configuracion de ~/.config/hypr/hypridle.conf, en su
+# formato, no en Lua.
+enlazar "$SRC_DIR/hypridle.conf" "$DST_DIR/hypridle.conf"
 
 # maquina.lua: overrides.lua lo carga con require y usa lo que devuelve, asi que
 # tiene que existir. No se sobrescribe nunca, que para eso es local.

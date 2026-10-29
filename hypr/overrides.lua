@@ -52,6 +52,31 @@ hl.bind("SUPER + SHIFT + U", hl.dsp.exec_cmd("gromit.sh redo"), { description = 
 hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd("gromit.sh clear"), { description = "Gromit, borrar todo" })
 hl.bind("SUPER + ALT + C", hl.dsp.exec_cmd("gromit.sh visibility"), { description = "Gromit, ocultar o mostrar trazos" })
 
+-- Pausar la inactividad, para una clase larga sin tocar el teclado. Mas fiable
+-- que estirar los tiempos de hypridle.conf, porque se ve lo que esta pasando.
+hl.bind("SUPER + I", hl.dsp.exec_cmd(
+    'pkill hypridle && notify-send -u low -i system-lock-screen "Inactividad en pausa"'
+    .. ' || { hypridle & notify-send -u low -i system-lock-screen "Inactividad activa"; }'
+), { description = "Pausar o reanudar la inactividad" })
+
+-- Luz calida de noche, que se alterna a mano. 4000 K tira a ambar, "identity"
+-- devuelve el color real de la pantalla. Ojo al grabar o al editar video: con
+-- esto encendido los colores que ves no son los del archivo.
+hl.bind("SUPER + O", hl.dsp.exec_cmd(
+    'hyprctl hyprsunset temperature | grep -q 6500 '
+    .. '&& hyprctl hyprsunset temperature 4000 '
+    .. '|| hyprctl hyprsunset identity'
+), { description = "Luz calida de noche" })
+
+-- Modo grabacion: sin efectos y con el ventilador callado, para grabar clase.
+hl.bind("SUPER + G", hl.dsp.exec_cmd("modo-grabacion.sh"), { description = "Modo grabacion" })
+
+-- Escritorio especial, el cajon: notas, musica o la terminal de apoyo sin
+-- gastar un escritorio entero ni perder lo que estabas mirando.
+hl.bind("SUPER + S", hl.dsp.workspace.toggle_special("cajon"), { description = "Mostrar u ocultar el cajon" })
+hl.bind("SUPER + M", hl.dsp.window.move({ workspace = "special:cajon" }), { description = "Mandar la ventana al cajon" })
+hl.workspace_rule({ workspace = "special:cajon", gaps_out = 60, border_size = 3 })
+
 -- Otras aplicaciones
 hl.bind("SUPER + X", hl.dsp.exec_cmd("obs"), { description = "OBS" })
 hl.bind("SUPER + Z", hl.dsp.exec_cmd("xournalpp"), { description = "Xournal++" })
@@ -63,7 +88,21 @@ hl.config({
         kb_layout  = "latam, us",
         kb_variant = "",
         kb_model   = "",
-        kb_options = "grp:win_space_toggle",
+        -- grp:win_space_toggle  Super+Espacio cambia de distribucion.
+        -- caps:super            Bloq Mayus pasa a ser un Super completo.
+        --
+        -- Lo segundo es un apano por una averia del teclado, no un gusto. El
+        -- Win de este TUF dejo de mandar su codigo el 27 de octubre de 2026 a
+        -- las 23:35 y manda en su lugar el evento WMI 0x4f, que asus_wmi no
+        -- sabe traducir: cero eventos 0x4f en los seis arranques anteriores,
+        -- decenas en todos los posteriores. Sin tecla Super no hay lanzador ni
+        -- ninguno de los cien atajos.
+        --
+        -- /usr/share/X11/xkb/symbols/capslock dice que caps:super hace
+        -- key <CAPS> { [ Super_L ] }, o sea el mismo keysym que perdio el
+        -- teclado. Asi revive todo, incluido el bind de SUPER_L del lanzador.
+        -- Si algun dia se desbloquea el Win, esta linea se puede quitar.
+        kb_options = "grp:win_space_toggle,caps:super",
         kb_rules   = "",
 
         repeat_rate  = 50,
@@ -79,19 +118,11 @@ hl.config({
     },
 })
 
----- Aspecto general ----
--- Sin espacios entre ventanas, al contrario de hyprance.lua. El color del borde
--- activo lo pone hyprance.lua leyendo los colores de pywal, asi que aqui no se
--- vuelve a tocar.
-hl.config({
-    general = {
-        gaps_in     = 0,
-        gaps_out    = 0,
-        border_size = 2,
-        layout = "master",
-        allow_tearing = false,
-    },
-})
+-- El aspecto (espacios, bordes, sombra, blur, animaciones) esta todo en
+-- hyprance.lua, que se carga antes. Aqui habia un bloque general que lo unico
+-- que hacia era volver los espacios a cero, y con cero espacio el redondeo de
+-- las esquinas no se ve. Si alguna vez quieres las ventanas pegadas otra vez,
+-- es gaps_in y gaps_out en hyprance.lua.
 
 ---- Touchpad ----
 -- Antes user_configs/touchpad.conf, que lo genero initial_boot.sh.
@@ -134,6 +165,27 @@ hl.device({
 })
 
 ---- Reglas de ventana ----
+
+-- Lo que tiene mas sentido flotando y centrado que partiendo el mosaico: los
+-- dialogos de ajustes, el control de volumen y el visor de video. "floating" es
+-- el app-id que usan los binds de la distribucion cuando quieren una ventana
+-- suelta, como el pulsemixer de SUPER+SHIFT+V.
+hl.window_rule({
+    name  = "sueltas-y-centradas",
+    match = { class = "^(pavucontrol|nm-connection-editor|lxqt-policykit-agent|floating|mpv|org.pulseaudio.pavucontrol)$" },
+    float  = true,
+    center = true,
+    size   = "60% 60%",
+})
+
+-- Los dialogos de abrir y guardar archivo, que salen de cualquier aplicacion.
+hl.window_rule({
+    name  = "dialogos-de-archivo",
+    match = { title = "^(Open File|Save File|Abrir|Guardar|Seleccionar archivo).*$" },
+    float  = true,
+    center = true,
+})
+
 hl.window_rule({
     name  = "gromit-crisp",
     match = { class = "^(gromit-mpx|Gromit-mpx)$" },
@@ -156,4 +208,34 @@ hl.window_rule({
     monitor = maquina.salida,
     move    = "0 0",
     size    = "1920 1080",
+})
+
+---- Gestos del touchpad ----
+-- No habia ninguno configurado. Tres dedos en horizontal cambia de escritorio.
+hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+---- Comodidades de 0.57 ----
+hl.config({
+    cursor = {
+        -- Con el espejo a HDMI para el proyector y la pantalla USB-C, el
+        -- puntero se perdia al cambiar de salida.
+        warp_on_monitor_change = true,
+    },
+
+    misc = {
+        -- Que una aplicacion que pide el foco lo reciba, en vez de quedarse
+        -- parpadeando en waybar.
+        focus_on_activate = true,
+    },
+
+    animations = {
+        -- Del ultimo escritorio al primero sin frenar en el borde.
+        workspace_wraparound = true,
+    },
+
+    binds = {
+        -- Oprimir dos veces el numero del escritorio actual devuelve al
+        -- anterior.
+        workspace_back_and_forth = true,
+    },
 })
