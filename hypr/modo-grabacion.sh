@@ -13,20 +13,36 @@
 set -euo pipefail
 
 MARCA="${XDG_RUNTIME_DIR:-/tmp}/modo-grabacion"
+PERFIL_PREVIO="${XDG_RUNTIME_DIR:-/tmp}/modo-grabacion.perfil"
 
-perfil() {
-  command -v asusctl >/dev/null 2>&1 || return 0
-  asusctl profile -P "$1" >/dev/null 2>&1 || true
+# asusctl 6.5 usa subcomandos, no banderas: `profile get` y `profile set <x>`.
+# Los perfiles de este TUF son Quiet, Balanced y Performance.
+hay_asusctl() { command -v asusctl >/dev/null 2>&1; }
+
+guardar_perfil() {
+  hay_asusctl || return 0
+  # "Active profile: Performance" -> "Performance"
+  asusctl profile get 2>/dev/null | awk -F': ' '/Active profile/{print $2}' >"$PERFIL_PREVIO" || true
+}
+
+poner_perfil() {
+  hay_asusctl || return 0
+  [[ -n "$1" ]] && asusctl profile set "$1" >/dev/null 2>&1 || true
 }
 
 if [[ -f "$MARCA" ]]; then
   rm -f -- "$MARCA"
   hyprctl reload config-only >/dev/null
-  perfil Balanced
-  notify-send -u low -i media-record "Modo grabacion apagado" "Vuelven animaciones, blur y sombras"
+  # Devolver el perfil que habia antes, no uno inventado: este equipo puede
+  # estar en Performance y bajarlo a Balanced en silencio seria una sorpresa.
+  previo="$(cat -- "$PERFIL_PREVIO" 2>/dev/null || true)"
+  poner_perfil "${previo:-Balanced}"
+  rm -f -- "$PERFIL_PREVIO"
+  notify-send -u low -i media-record "Modo grabacion apagado" "Vuelven los efectos y el perfil ${previo:-Balanced}"
 else
+  guardar_perfil
   : >"$MARCA"
   hyprctl reload config-only >/dev/null
-  perfil Quiet
-  notify-send -u low -i media-record "Modo grabacion encendido" "Sin animaciones ni efectos, ventilador silencioso"
+  poner_perfil Quiet
+  notify-send -u low -i media-record "Modo grabacion encendido" "Sin efectos, ventilador silencioso"
 fi

@@ -62,11 +62,7 @@ hl.bind("SUPER + I", hl.dsp.exec_cmd(
 -- Luz calida de noche, que se alterna a mano. 4000 K tira a ambar, "identity"
 -- devuelve el color real de la pantalla. Ojo al grabar o al editar video: con
 -- esto encendido los colores que ves no son los del archivo.
-hl.bind("SUPER + O", hl.dsp.exec_cmd(
-    'hyprctl hyprsunset temperature | grep -q 6500 '
-    .. '&& hyprctl hyprsunset temperature 4000 '
-    .. '|| hyprctl hyprsunset identity'
-), { description = "Luz calida de noche" })
+hl.bind("SUPER + O", hl.dsp.exec_cmd("luz-calida.sh"), { description = "Luz calida de noche" })
 
 -- Modo grabacion: sin efectos y con el ventilador callado, para grabar clase.
 hl.bind("SUPER + G", hl.dsp.exec_cmd("modo-grabacion.sh"), { description = "Modo grabacion" })

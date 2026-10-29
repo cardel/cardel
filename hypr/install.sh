@@ -7,6 +7,7 @@
 #   refresh.sh   -> ~/.local/bin/refresh.sh
 #   keybinds.sh  -> ~/.local/bin/keybinds.sh
 #   modo-grabacion.sh -> ~/.local/bin/modo-grabacion.sh
+#   luz-calida.sh -> ~/.local/bin/luz-calida.sh
 #   hypridle.conf-> $XDG_CONFIG_HOME/hypr/hypridle.conf
 #
 # Se corre desde esta carpeta:  ./install.sh
@@ -64,6 +65,7 @@ enlazar "$SRC_DIR/touchpad.sh" "$BIN_DIR/touchpad.sh"
 enlazar "$SRC_DIR/refresh.sh" "$BIN_DIR/refresh.sh"
 enlazar "$SRC_DIR/keybinds.sh" "$BIN_DIR/keybinds.sh"
 enlazar "$SRC_DIR/modo-grabacion.sh" "$BIN_DIR/modo-grabacion.sh"
+enlazar "$SRC_DIR/luz-calida.sh" "$BIN_DIR/luz-calida.sh"
 
 # hypridle lee su propia configuracion de ~/.config/hypr/hypridle.conf, en su
 # formato, no en Lua.
