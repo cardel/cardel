@@ -1,0 +1,24 @@
+-- Plantilla de maquina.lua para un equipo nuevo. Copiar como maquina.lua en
+-- ~/.config/hypr/ y ajustar. El archivo real NO se versiona.
+--
+-- Para saber los nombres: `hyprctl monitors` y `hyprctl devices`.
+
+---- Monitores ----
+
+-- Un portatil suele necesitar solo esto:
+-- hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1 })
+--
+-- El PC de mesa, dos salidas una al lado de la otra:
+-- hl.monitor({ output = "DP-3", mode = "1920x1080@60", position = "0x0", scale = 1 })
+-- hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@60", position = "1920x0", scale = 1 })
+
+---- Lo que overrides.lua necesita saber de este equipo ----
+
+return {
+    -- Salida donde se fija la superposicion de gromit y donde se mapea la
+    -- tableta grafica.
+    salida = "eDP-1",
+
+    -- Nombre del touchpad. nil en un equipo que no tenga.
+    touchpad = nil,
+}
